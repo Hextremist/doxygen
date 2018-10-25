@@ -535,7 +535,7 @@ class DocSeparator : public DocNode
 class DocVerbatim : public DocNode
 {
   public:
-    enum Type { Code, HtmlOnly, ManOnly, LatexOnly, RtfOnly, XmlOnly, Verbatim, Dot, Msc, DocbookOnly, PlantUML };
+    enum Type { Code, HtmlOnly, ManOnly, LatexOnly, RtfOnly, XmlOnly, Verbatim, Dot, Msc, DocbookOnly, PlantUML, AsciidocOnly };
     DocVerbatim(DocNode *parent,const QCString &context,
                 const QCString &text, Type t,bool isExample,
                 const QCString &exampleFile,bool isBlock=FALSE,const QCString &lang=QCString());
@@ -781,7 +781,7 @@ class DocXRefItem : public CompAccept<DocXRefItem>
 class DocImage : public CompAccept<DocImage>
 {
   public:
-    enum Type { Html, Latex, Rtf, DocBook };
+    enum Type { Html, Latex, Rtf, DocBook, Asciidoc };
     DocImage(DocNode *parent,const HtmlAttribList &attribs,
              const QCString &name,Type t,const QCString &url=QCString(), bool inlineImage = TRUE);
     Kind kind() const           { return Kind_Image; }

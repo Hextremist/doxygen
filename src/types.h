@@ -236,7 +236,8 @@ class LocalToc
       Latex                  = 1, // ...
       Xml                    = 2, // ...
       Docbook                = 3, // ...
-      numTocTypes            = 4  // number of enum values
+      Asciidoc               = 4, // ...
+      numTocTypes            = 5  // number of enum values
     };
     LocalToc() : m_mask(None) { memset(m_level,0,sizeof(m_level)); }
 
@@ -261,17 +262,24 @@ class LocalToc
       m_mask|=(1<<Docbook);
       m_level[Docbook]=level;
     }
+    void enableAsciidoc(int level)
+    {
+      m_mask|=(1<<Docbook);
+      m_level[Asciidoc]=level;
+    }
 
     // getters
     bool isHtmlEnabled()  const { return (m_mask & (1<<Html))!=0;  }
     bool isLatexEnabled() const { return (m_mask & (1<<Latex))!=0; }
     bool isXmlEnabled()   const { return (m_mask & (1<<Xml))!=0;   }
     bool isDocbookEnabled()   const { return (m_mask & (1<<Docbook))!=0;   }
+    bool isAsciidocEnabled()   const { return (m_mask & (1<<Asciidoc))!=0;   }
     bool nothingEnabled() const { return m_mask == None; }
     int htmlLevel()       const { return m_level[Html]; }
     int latexLevel()      const { return m_level[Latex]; }
     int xmlLevel()        const { return m_level[Xml]; }
     int docbookLevel()    const { return m_level[Docbook]; }
+    int asciidocLevel()   const { return m_level[Asciidoc]; }
     int mask()            const { return m_mask; }
 
   private:

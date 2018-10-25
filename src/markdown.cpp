@@ -207,16 +207,17 @@ static QCString isBlockCommand(const char *data,int offset,int size)
   {
     return "}";
   }
-  else if (blockName=="dot"         || 
-           blockName=="code"        || 
-           blockName=="msc"         ||
-           blockName=="verbatim"    || 
-           blockName=="latexonly"   || 
-           blockName=="htmlonly"    ||
-           blockName=="xmlonly"     ||
-           blockName=="rtfonly"     ||
-           blockName=="manonly"     ||
-           blockName=="docbookonly"
+  else if (blockName=="dot"           || 
+           blockName=="code"          || 
+           blockName=="msc"           ||
+           blockName=="verbatim"      || 
+           blockName=="latexonly"     || 
+           blockName=="htmlonly"      ||
+           blockName=="xmlonly"       ||
+           blockName=="rtfonly"       ||
+           blockName=="manonly"       ||
+           blockName=="docbookonly"   ||
+           blockName=="asciidockonly"
      )
   {
     return "end"+blockName;
@@ -888,6 +889,7 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
       writeMarkdownImage(out, "latex", explicitTitle, title, content, link, fd);
       writeMarkdownImage(out, "rtf", explicitTitle, title, content, link, fd);
       writeMarkdownImage(out, "docbook", explicitTitle, title, content, link, fd);
+      writeMarkdownImage(out, "asciidoc", explicitTitle, title, content, link, fd);
     }
     else
     {

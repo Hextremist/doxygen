@@ -159,6 +159,7 @@ class PrintDocVisitor : public DocVisitor
         case DocVerbatim::LatexOnly: printf("<latexonly>"); break;
         case DocVerbatim::XmlOnly: printf("<xmlonly>"); break;
         case DocVerbatim::DocbookOnly: printf("<docbookonly>"); break;
+        case DocVerbatim::AsciidocOnly: printf("<asciidoconly>"); break;
         case DocVerbatim::Dot: printf("<dot>"); break;
         case DocVerbatim::Msc: printf("<msc>"); break;
         case DocVerbatim::PlantUML: printf("<plantuml>"); break;
@@ -174,6 +175,7 @@ class PrintDocVisitor : public DocVisitor
         case DocVerbatim::LatexOnly: printf("</latexonly>"); break;
         case DocVerbatim::XmlOnly: printf("</xmlonly>"); break;
         case DocVerbatim::DocbookOnly: printf("</docbookonly>"); break;
+        case DocVerbatim::AsciidocOnly: printf("</asciidoconly>"); break;
         case DocVerbatim::Dot: printf("</dot>"); break;
         case DocVerbatim::Msc: printf("</msc>"); break;
         case DocVerbatim::PlantUML: printf("</plantuml>"); break;
@@ -519,6 +521,7 @@ class PrintDocVisitor : public DocVisitor
         case DocImage::Latex:   printf("latex"); break;
         case DocImage::Rtf:     printf("rtf"); break;
         case DocImage::DocBook: printf("docbook"); break;
+        case DocImage::Asciidoc: printf("asciidoc"); break;
       }
       printf("\" %s %s inline=\"%s\">\n",img->width().data(),img->height().data(),img->isInlineImage() ? "yes" : "no");
     }

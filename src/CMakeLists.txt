@@ -250,6 +250,8 @@ add_library(_doxygen STATIC
     docbookvisitor.cpp
     docbookgen.cpp
     docgroup.cpp
+    asciidocvisitor.cpp
+    asciidocgen.cpp
 )
 
 add_executable(doxygen main.cpp)

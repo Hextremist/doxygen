@@ -6161,6 +6161,29 @@ QCString convertToHtml(const char *s,bool keepEntities)
   return growBuf.get();
 }
 
+/*! Converts a string to an Asciidoc-encoded string */
+QCString convertToAsciidoc(const char *s)
+{
+#warning Fix conversion
+  static GrowBuf growBuf;
+  growBuf.clear();
+  if (s==0) return "";
+  const unsigned char *q;
+  int cnt;
+  const unsigned char *p=(const unsigned char *)s;
+  char c;
+  while ((c=*p++))
+  {
+    switch (c)
+    {
+      default:
+	growBuf.addChar(c);   break;
+    }
+  }
+  growBuf.addChar(0);
+  return growBuf.get();
+}
+
 QCString convertToJSString(const char *s, bool applyTextDir)
 {
   static GrowBuf growBuf;

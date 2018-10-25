@@ -198,6 +198,7 @@ static DocCmdMap docCmdMap[] =
   { "htmlonly",        &handleFormatBlock,      FALSE },
   { "xmlonly",         &handleFormatBlock,      FALSE },
   { "docbookonly",     &handleFormatBlock,      FALSE },
+  { "asciidoconly",    &handleFormatBlock,      FALSE },
   { "rtfonly",         &handleFormatBlock,      FALSE },
   { "manonly",         &handleFormatBlock,      FALSE },
   { "dot",             &handleFormatBlock,      TRUE  },
@@ -1872,7 +1873,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 
   /* ----- handle arguments of the preformatted block commands ------- */
 
-<FormatBlock>{CMD}("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode"|"endmsc"|"endvhdlflow")/{NW} { // possible ends
+<FormatBlock>{CMD}("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endasciidoconly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode"|"endmsc"|"endvhdlflow")/{NW} { // possible ends
   					  addOutput(yytext);
 					  if (&yytext[4]==blockName) // found end of the block
 					  {
@@ -3004,6 +3005,10 @@ static bool handleToc(const QCString &, const QCStringList &optList)
         else if (opt == "docbook")
         {
           current->localToc.enableDocbook(level);
+        }
+        else if (opt == "asciidoc")
+        {
+          current->localToc.enableAsciidoc(level);
         }
         else
         {

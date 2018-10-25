@@ -31,6 +31,7 @@ class HtmlEntityMapper
     const char *html(DocSymbol::SymType symb,bool useInPrintf=FALSE) const;
     const char *xml(DocSymbol::SymType symb) const;
     const char *docbook(DocSymbol::SymType symb) const;
+    const char *asciidoc(DocSymbol::SymType symb) const;
     const char *latex(DocSymbol::SymType symb) const;
     const char *man(DocSymbol::SymType symb) const;
     const char *rtf(DocSymbol::SymType symb) const;

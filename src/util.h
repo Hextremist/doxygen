@@ -289,6 +289,8 @@ QCString convertToXML(const char *s, bool keepEntities=FALSE);
 
 QCString convertToDocBook(const char *s);
 
+QCString convertToAsciidoc(const char *s);
+
 QCString convertToJSString(const char *s, bool applyTextDir = true);
 
 QCString getOverloadDocs();

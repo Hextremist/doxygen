@@ -62,6 +62,7 @@
 #include "sqlite3gen.h"
 #include "xmlgen.h"
 #include "docbookgen.h"
+#include "asciidocgen.h"
 #include "defgen.h"
 #include "perlmodgen.h"
 #include "reflist.h"
@@ -11236,6 +11237,11 @@ void parseInput()
   if (generateDocbook)
     docbookOutput = createOutputDirectory(outputDirectory,Config_getString(DOCBOOK_OUTPUT),"/docbook");
 
+  QCString asciidocOutput;
+  bool &generateAsciidoc = Config_getBool(GENERATE_ASCIIDOC);
+  if (generateAsciidoc)
+    asciidocOutput = createOutputDirectory(outputDirectory,Config_getString(ASCIIDOC_OUTPUT),"/asciidoc");
+
   QCString xmlOutput;
   bool &generateXml = Config_getBool(GENERATE_XML);
   if (generateXml)
@@ -11313,12 +11319,13 @@ void parseInput()
 
   // prevent search in the output directories
   QStrList &exclPatterns = Config_getList(EXCLUDE_PATTERNS);
-  if (generateHtml)    exclPatterns.append(htmlOutput);
-  if (generateDocbook) exclPatterns.append(docbookOutput);
-  if (generateXml)     exclPatterns.append(xmlOutput);
-  if (generateLatex)   exclPatterns.append(latexOutput);
-  if (generateRtf)     exclPatterns.append(rtfOutput);
-  if (generateMan)     exclPatterns.append(manOutput);
+  if (generateHtml)     exclPatterns.append(htmlOutput);
+  if (generateDocbook)  exclPatterns.append(docbookOutput);
+  if (generateAsciidoc) exclPatterns.append(asciidocOutput);
+  if (generateXml)      exclPatterns.append(xmlOutput);
+  if (generateLatex)    exclPatterns.append(latexOutput);
+  if (generateRtf)      exclPatterns.append(rtfOutput);
+  if (generateMan)      exclPatterns.append(manOutput);
 
   searchInputFiles();
 
@@ -11337,6 +11344,12 @@ void parseInput()
   {
     // in case GENERRATE_HTML is set we just have to compare, both repositories should be identical
     readFormulaRepository(Config_getString(DOCBOOK_OUTPUT),
+                         (Config_getBool(GENERATE_HTML) && !Config_getBool(USE_MATHJAX)) || Config_getBool(GENERATE_RTF));
+  }
+  if (Config_getBool(GENERATE_ASCIIDOC))
+  {
+    // in case GENERRATE_HTML is set we just have to compare, both repositories should be identical
+    readFormulaRepository(Config_getString(ASCIIDOC_OUTPUT),
                          (Config_getBool(GENERATE_HTML) && !Config_getBool(USE_MATHJAX)) || Config_getBool(GENERATE_RTF));
   }
 
@@ -11686,6 +11699,7 @@ void generateOutput()
   bool generateMan   = Config_getBool(GENERATE_MAN);
   bool generateRtf   = Config_getBool(GENERATE_RTF);
   bool generateDocbook = Config_getBool(GENERATE_DOCBOOK);
+  bool generateAsciidoc = Config_getBool(GENERATE_ASCIIDOC);
 
 
   g_outputList = new OutputList(TRUE);
@@ -11717,6 +11731,11 @@ void generateOutput()
   {
     g_outputList->add(new DocbookGenerator);
     DocbookGenerator::init();
+  }
+  if (generateAsciidoc)
+  {
+    g_outputList->add(new AsciidocGenerator);
+    AsciidocGenerator::init();
   }
   if (generateMan)
   {
@@ -11837,6 +11856,13 @@ void generateOutput()
     g_s.end();
   }
 
+  if (Doxygen::formulaList->count()>0 && generateAsciidoc)
+  {
+      g_s.begin("Generating bitmaps for formulas in Asciidoc...\n");
+      Doxygen::formulaList->generateBitmaps(Config_getString(ASCIIDOC_OUTPUT));
+      g_s.end();
+  }
+
   if (Config_getBool(SORT_GROUP_NAMES))
   {
     Doxygen::groupSDict->sort();
@@ -11953,6 +11979,10 @@ void generateOutput()
   if (generateDocbook)
   {
     copyLogo(Config_getString(DOCBOOK_OUTPUT));
+  }
+  if (generateAsciidoc)
+  {
+    copyLogo(Config_getString(ASCIIDOC_OUTPUT));
   }
   if (generateRtf)
   {

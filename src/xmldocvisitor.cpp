@@ -51,10 +51,11 @@ static void visitPreStart(FTextStream &t, const char *cmd, bool doCaption,
     t << " type=\"";
     switch(type)
     {
-      case DocImage::Html:    t << "html"; break;
-      case DocImage::Latex:   t << "latex"; break;
-      case DocImage::Rtf:     t << "rtf"; break;
-      case DocImage::DocBook: t << "docbook"; break;
+      case DocImage::Html:     t << "html"; break;
+      case DocImage::Latex:    t << "latex"; break;
+      case DocImage::Rtf:      t << "rtf"; break;
+      case DocImage::DocBook:  t << "docbook"; break;
+      case DocImage::Asciidoc: t << "asciidoc"; break;
     }
     t << "\"";
   }
@@ -266,6 +267,7 @@ void XmlDocVisitor::visit(DocVerbatim *s)
     case DocVerbatim::ManOnly: 
     case DocVerbatim::LatexOnly: 
     case DocVerbatim::DocbookOnly:
+    case DocVerbatim::AsciidocOnly:
       /* nothing */ 
       break;
     case DocVerbatim::XmlOnly: 
