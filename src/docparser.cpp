@@ -4602,7 +4602,6 @@ QCString DocSimpleSect::typeString() const
 }
 
 //--------------------------------------------------------------------------
-
 int DocParamList::parse(const QCString &cmdName)
 {
   int retval=RetVal_OK;

@@ -136,12 +136,6 @@ inline void writeAsciidocCodeString(FTextStream &t,const char *s, int &col)
           while (spacesToNextTabStop--) t << "&#32;";
           break;
         }
-      case ' ':  t << "&#32;"; col++;  break;
-      case '<':  t << "&lt;"; col++;   break;
-      case '>':  t << "&gt;"; col++;   break;
-      case '&':  t << "&amp;"; col++;  break;
-      case '\'': t << "&apos;"; col++; break;
-      case '"':  t << "&quot;"; col++; break;
       case '\007':  t << "^G"; col++; break; // bell
       case '\014':  t << "^L"; col++; break; // form feed
       default:   t << c; col++;        break;
@@ -151,8 +145,7 @@ inline void writeAsciidocCodeString(FTextStream &t,const char *s, int &col)
 
 static void writeAsciidocHeaderMainpage(FTextStream &t, QCString &pageName)
 {
-  if (!pageName.isEmpty()) t << " xml:id=\"_" << pageName << "\"";
-  t << ">" << endl;
+  if (!pageName.isEmpty()) t << "1[[_" << pageName << "]]" << endl;
 }
 
 static void writeAsciidocHeader_ID(FTextStream &t, QCString id)
@@ -161,21 +154,12 @@ static void writeAsciidocHeader_ID(FTextStream &t, QCString id)
 
 static void addIndexTerm(FTextStream &t, QCString prim, QCString sec = "")
 {
-  t << "<indexterm><primary>";
-  t << convertToAsciidoc(prim);
-  t << "</primary>";
-  if (!sec.isEmpty())
-  {
-    t << "<secondary>";
-    t << convertToAsciidoc(sec);
-    t << "</secondary>";
-  }
-  t << "</indexterm>" << endl;
+  // No indexterm support in asciidoc yet
 }
 void writeAsciidocLink(FTextStream &t,const char * /*extRef*/,const char *compoundId,
     const char *anchorId,const char * text,const char * /*tooltip*/)
 {
-  t << "<<" << stripPath(compoundId);
+  t << "<<1" << stripPath(compoundId);
   if (anchorId) t << "_1" << anchorId;
   t << ",";
   writeAsciidocString(t,text);
@@ -316,11 +300,13 @@ void AsciidocCodeGenerator::finish()
 }
 void AsciidocCodeGenerator::startCodeFragment()
 {
-  m_t << "<literallayout><computeroutput>" << endl;
+  m_t << "[source1]" << endl;
+  m_t << "----" << endl;
 }
 void AsciidocCodeGenerator::endCodeFragment()
 {
-  m_t << "</computeroutput></literallayout>" << endl;
+  m_t << "----" << endl;
+  m_t << endl;
 }
 
 static void writeTemplateArgumentList(ArgumentList *al,
@@ -338,21 +324,21 @@ static void writeTemplateArgumentList(ArgumentList *al,
     Argument *a;
     for (ali.toFirst();(a=ali.current());++ali)
     {
-      t << indentStr << "  <param>" << endl;
+      t << indentStr << "<param>" << endl;
       if (!a->type.isEmpty())
       {
-        t << indentStr <<  "    <type>";
+        t << indentStr <<  "<type>";
         linkifyText(TextGeneratorAsciidocImpl(t),scope,fileScope,0,a->type);
         t << "</type>" << endl;
       }
       if (!a->name.isEmpty())
       {
-        t << indentStr <<  "    <declname>" << a->name << "</declname>" << endl;
-        t << indentStr <<  "    <defname>" << a->name << "</defname>" << endl;
+        t << indentStr <<  "<declname>" << a->name << "</declname>" << endl;
+        t << indentStr <<  "<defname>" << a->name << "</defname>" << endl;
       }
       if (!a->defval.isEmpty())
       {
-        t << indentStr << "    <defval>";
+        t << indentStr << "<defval>";
         linkifyText(TextGeneratorAsciidocImpl(t),scope,fileScope,0,a->defval);
         t << "</defval>" << endl;
       }
@@ -436,48 +422,8 @@ static void generateTOC(FTextStream &t, PageDef *pd)
 {
   if (pd->localToc().isAsciidocEnabled())
   {
-    t << "    <toc>" << endl;
-    t << "    <title>" << theTranslator->trRTFTableOfContents() << "</title>" << endl;
-    SectionDict *sectionDict = pd->getSectionDict();
-    SDict<SectionInfo>::Iterator li(*sectionDict);
-    SectionInfo *si;
-    int level=1,l;
-    bool inLi[5]={ FALSE, FALSE, FALSE, FALSE, FALSE };
-    int maxLevel = pd->localToc().asciidocLevel();
-    for (li.toFirst();(si=li.current());++li)
-    {
-      if (si->type==SectionInfo::Section       ||
-          si->type==SectionInfo::Subsection    ||
-          si->type==SectionInfo::Subsubsection ||
-          si->type==SectionInfo::Paragraph)
-      {
-        //printf("  level=%d title=%s\n",level,si->title.data());
-        int nextLevel = (int)si->type;
-        if (nextLevel>level)
-        {
-          for (l=level;l<nextLevel;l++)
-          {
-            if (l < maxLevel) t << "    <tocdiv>" << endl;
-          }
-        }
-        else if (nextLevel<level)
-        {
-          for (l=level;l>nextLevel;l--)
-          {
-            inLi[l]=FALSE;
-            if (l <= maxLevel) t << "    </tocdiv>" << endl;
-          }
-        }
-        if (nextLevel <= maxLevel)
-        {
-          QCString titleDoc = convertToAsciidoc(si->title);
-          t << "      <tocentry>" << (si->title.isEmpty()?si->label:titleDoc) << "</tocentry>" << endl;
-        }
-        inLi[nextLevel]=TRUE;
-        level = nextLevel;
-      }
-    }
-    t << "    </toc>" << endl;
+      t << ":toc:" << endl;
+      t << endl;
   }
 }
 
@@ -490,7 +436,8 @@ static void generateSourceRefList(FTextStream &t,const char *scopeName, const QC
   {
     members->sort();
 
-    t << "<formalpara><title>" << convertToAsciidoc(text) << "</title><para>";
+    t << "== 1" << convertToAsciidoc(text) << endl;
+    t << endl;
 
     QCString ldefLine=theTranslator->trWriteList(members->count());
 
@@ -552,8 +499,7 @@ static void generateSourceRefList(FTextStream &t,const char *scopeName, const QC
       index=newIndex+matchLen;
     }
     t << ldefLine.right(ldefLine.length()-index);
-    t<< ".";
-    t << "</para></formalpara>";
+    t << ".";
   }
 }
 static void generateInlineCode(FTextStream &t,const char *scopeName, Definition *def)
@@ -681,16 +627,14 @@ static void generateAsciidocForMember(MemberDef *md,FTextStream &t,Definition *d
   }
   if (detailed==0)
   {
-    t << "            <para>" << endl;
-    t << "                <itemizedlist>" << endl;
-    t << "                    <listitem>" << endl;
+    t << "*1 ";
     //enum
     bool closePara=TRUE;
     if (md->memberType()==MemberType_Enumeration)
     {
       bool inLi[5]={ FALSE, FALSE, FALSE, FALSE, FALSE };
       MemberList *enumFields = md->enumFieldList();
-      t << "                            <para><literallayout>" << memType << " <link linkend=\"_";
+      t << memType << " 2[[_";
       if (md->getGroupDef() && def->definitionType()==Definition::TypeGroup)
       {
         t << md->getGroupDef()->getOutputFileBase();
@@ -699,7 +643,7 @@ static void generateAsciidocForMember(MemberDef *md,FTextStream &t,Definition *d
       {
         t << memberOutputFileBase(md);
       }
-      t << "_1" << md->anchor() << "\">" << convertToAsciidoc(md->name()) << "</link>";
+      t << "_1" << md->anchor() << "," << convertToAsciidoc(md->name()) << "]]";
       if (enumFields!=0)
       {
         MemberListIterator emli(*enumFields);
@@ -712,9 +656,9 @@ static void generateAsciidocForMember(MemberDef *md,FTextStream &t,Definition *d
           {
             t << "," << endl;
           }
-          t << "<link linkend=\"_" << memberOutputFileBase(emd) << "_1" << emd->anchor() << "\">";
+          t << "3[[_" << memberOutputFileBase(emd) << "_1" << emd->anchor() << ",";
           writeAsciidocString(t,emd->name());
-          t << "</link>";
+          t << "]]";
           if (!emd->initializer().isEmpty())
           {
             writeAsciidocString(t,emd->initializer());
@@ -723,17 +667,17 @@ static void generateAsciidocForMember(MemberDef *md,FTextStream &t,Definition *d
         }
         t << endl << "}";
       }
-      t << "</literallayout>" << endl;
+      t << endl;
       if (md->briefDescription())
       {
-          t << "<para><emphasis>";
+          t << " __";
           writeAsciidocString(t,md->briefDescription());
-          t << "</emphasis></para>" << endl;
+          t << "__" << endl;
       }
     }
     else if (md->memberType()==MemberType_Define)
     {
-      t << "                            <para>" << "#" << memType << " <link linkend=\"_";
+      t << "#" << memType << " 4[[_";
       if (md->getGroupDef() && def->definitionType()==Definition::TypeGroup)
       {
         t << md->getGroupDef()->getOutputFileBase();
@@ -742,7 +686,7 @@ static void generateAsciidocForMember(MemberDef *md,FTextStream &t,Definition *d
       {
         t << memberOutputFileBase(md);
       }
-      t << "_1" << md->anchor() << "\">" << convertToAsciidoc(md->name()) << "</link>";
+      t << "_1" << md->anchor() << "," << convertToAsciidoc(md->name()) << "]]";
       if (!md->initializer().isEmpty() && md->initializer().length()<2000)
       {
         t << " ";
@@ -750,28 +694,27 @@ static void generateAsciidocForMember(MemberDef *md,FTextStream &t,Definition *d
       }
       if (md->briefDescription())
       {
-        t << "<para><emphasis>";
+        t << " __";
         writeAsciidocString(t,md->briefDescription());
-        t << "</emphasis></para>" << endl;
+        t << "__" << endl;
       }
     }
     else if (md->memberType()==MemberType_Variable)
     {
       if (md->getClassDef())
       {
-        t << "                        <para>" << convertToAsciidoc(md->declaration());
+        t << convertToAsciidoc(md->declaration());
         if (md->briefDescription())
         {
-          t << "<para><emphasis>";
+          t << " __";
           writeAsciidocString(t,md->briefDescription());
-          t << "</emphasis></para>";
+          t << "__ ";
         }
       }
       else
       {
-        t << "                        <para>";
         linkifyText(TextGeneratorAsciidocImpl(t),def,md->getBodyDef(),md,md->typeString());
-        t << " <link linkend=\"_";
+        t << " 5[[_";
         if (md->getGroupDef() && def->definitionType()==Definition::TypeGroup)
         {
           t << md->getGroupDef()->getOutputFileBase();
@@ -780,22 +723,19 @@ static void generateAsciidocForMember(MemberDef *md,FTextStream &t,Definition *d
         {
           t << memberOutputFileBase(md);
         }
-        t << "_1" << md->anchor() << "\">" << convertToAsciidoc(md->name()) << "</link>";
+        t << "_1" << md->anchor() << "," << convertToAsciidoc(md->name()) << "]]\n";
         if (md->briefDescription())
         {
-            t << "<para><emphasis>";
+            t << "__";
             writeAsciidocString(t,md->briefDescription());
-            t << "</emphasis></para>" << endl;
+            t << "__" << endl;
         }
       }
     }
     else if (md->memberType()==MemberType_Typedef)
     {
-      t << "                            <para>" << memType;
-      t << " ";
       linkifyText(TextGeneratorAsciidocImpl(t),def,md->getBodyDef(),md,md->typeString());
-      t << " ";
-      t << " <link linkend=\"_";
+      t << "6[[_";
       if (md->getGroupDef() && def->definitionType()==Definition::TypeGroup)
       {
         t << md->getGroupDef()->getOutputFileBase();
@@ -804,19 +744,18 @@ static void generateAsciidocForMember(MemberDef *md,FTextStream &t,Definition *d
       {
         t << memberOutputFileBase(md);
       }
-      t << "_1" << md->anchor() << "\">" << convertToAsciidoc(md->name()) << "</link>";
+      t << "_1" << "," << convertToAsciidoc(md->name()) << "]]" << endl;
       if (md->briefDescription())
       {
-          t << "<para><emphasis>";
+          t << "__";
           writeAsciidocString(t,md->briefDescription());
-          t << "</emphasis></para>" << endl;
+          t << "__" << endl;
       }
     }
     else if (md->memberType()==MemberType_Function)
     {
-      t << "                        <para>";
       linkifyText(TextGeneratorAsciidocImpl(t),def,md->getBodyDef(),md,md->typeString());
-      t << " <link linkend=\"_";
+      t << "7[[_";
       if (md->getGroupDef() && def->definitionType()==Definition::TypeGroup)
       {
         t << md->getGroupDef()->getOutputFileBase();
@@ -825,7 +764,7 @@ static void generateAsciidocForMember(MemberDef *md,FTextStream &t,Definition *d
       {
         t << memberOutputFileBase(md);
       }
-      t << "_1" << md->anchor() << "\">" << convertToAsciidoc(md->name()) << "</link>";
+      t << "_1" << md->anchor() << "," << convertToAsciidoc(md->name()) << "]]";
       t << " (" << endl;
       ArgumentList *declAl = md->declArgumentList();
       if (declAl && declAl->count()>0)
@@ -854,26 +793,24 @@ static void generateAsciidocForMember(MemberDef *md,FTextStream &t,Definition *d
       t << ")";
       if (md->briefDescription())
       {
-          t << "<para><emphasis>";
+          t << " __";
           writeAsciidocString(t,md->briefDescription());
-          t << "</emphasis></para>" << endl;
+          t << "__" << endl;
       }
     }
     else
     {
       closePara = FALSE;
     }
-    if (closePara) t << "</para>" << endl;
-    t << "                    </listitem>" << endl;
-    t << "                </itemizedlist>" << endl;
-    t << "            </para>" << endl;
+
+    t << endl;
   }
   else
   {
     if (md->memberType()==MemberType_Enumeration)
     {
       MemberList *enumFields = md->enumFieldList();
-      t << "            <section xml:id=\"_";
+      t << "<section xml:id=\"_";
       if (md->getGroupDef() && def->definitionType()==Definition::TypeGroup)
       {
         t << md->getGroupDef()->getOutputFileBase();
@@ -883,42 +820,34 @@ static void generateAsciidocForMember(MemberDef *md,FTextStream &t,Definition *d
         t << memberOutputFileBase(md);
       }
       t << "_1" << md->anchor() << "\">" << endl;
-      t << "               <title>" << memType << " " << convertToAsciidoc(md->name()) << " " << "</title>" << endl;
-      t << "               ";
+      t << "=== 2" << memType << " " << convertToAsciidoc(md->name()) << endl;
+      t << endl;
       writeAsciidocDocBlock(t,md->docFile(),md->docLine(),md->getOuterScope(),md,md->documentation());
       t << endl;
       if (enumFields!=0)
       {
         MemberListIterator emli(*enumFields);
         MemberDef *emd;
-        t << "               <formalpara>" << endl;
-        t << "                    <title>" << theTranslator->trEnumerationValues() << ":</title>" << endl;
-        t << "                    <variablelist>" << endl;
+        t << "==== 3" << theTranslator->trEnumerationValues() << ":" << endl;
+        t << "<variablelist>" << endl;
         for (emli.toFirst();(emd=emli.current());++emli)
         {
-          t << "                        <varlistentry xml:id=\"_";
+          t << "<varlistentry xml:id=\"_";
           t << memberOutputFileBase(emd) << "_1" << emd->anchor() << "\">" << endl;
-          t << "                            <term>";
+          t << "<term>";
           writeAsciidocString(t,emd->name());
           t << "</term>" << endl;
-          t << "                            <listitem>" << endl;
+          t << "*2 ";
           if(Config_getBool(REPEAT_BRIEF))
           {
-              t << "                                <para>";
               writeAsciidocString(t,emd->briefDescription());
-              t << "</para>" << endl;
           }
-          t << "                            </listitem>" << endl;
           t << "                        </varlistentry>" << endl;
         }
-        t << "                     </variablelist>" << endl;
-        t << "                </formalpara>" << endl;
-        t << "                <para>";
-        t << "                <para>";
         definedAtLine(md->getDefLine(),stripPath(md->getDefFileName()),t);
-        t << "</para>" << endl;
+        t << endl;
 
-        t << "                    <literallayout><computeroutput>" << endl;
+        t << "[literal]" << endl;
         t << "{" << endl;
         for (emli.toFirst();(emd=emli.current());++emli)
         {
@@ -930,14 +859,14 @@ static void generateAsciidocForMember(MemberDef *md,FTextStream &t,Definition *d
           t << ", " << endl;
         }
         t << "}" << convertToAsciidoc(md->name()) << ";" << endl;
-        t << "                    </computeroutput></literallayout>" << endl;
-        t << "                </para>" << endl;
+        t << "[literal]" << endl;
+        t << endl;
       }
-      t << "            </section>" << endl;
+      t << endl;
     }
     else if (md->memberType()==MemberType_Typedef)
     {
-      t << "            <section xml:id=\"_";
+      t << "<section xml:id=\"_";
       if (md->getGroupDef() && def->definitionType()==Definition::TypeGroup)
       {
         t << md->getGroupDef()->getOutputFileBase();
@@ -947,21 +876,22 @@ static void generateAsciidocForMember(MemberDef *md,FTextStream &t,Definition *d
         t << memberOutputFileBase(md);
       }
       t << "_1" << md->anchor() << "\">" << endl;
-      t << "                <title>" << convertToAsciidoc(md->definition()) << "</title>";
+      t << "=== 4" << convertToAsciidoc(md->definition()) << endl;
+      t << endl;
       if(Config_getBool(REPEAT_BRIEF))
       {
-          t << " <emphasis>";
+          t << " __";
           writeAsciidocString(t,md->briefDescription());
-          t << "</emphasis>" << endl;
+          t << "__ " << endl;
       }
       t << "                ";
       writeAsciidocDocBlock(t,md->docFile(),md->docLine(),md->getOuterScope(),md,md->documentation());
       t << endl;
-      t << "            </section>" << endl;
+      t << endl;
     }
     else if (md->memberType()==MemberType_Function)
     {
-      t << "            <section xml:id=\"_";
+      t << "<section xml:id=\"_";
       if (md->getGroupDef() && def->definitionType()==Definition::TypeGroup)
       {
         t << md->getGroupDef()->getOutputFileBase();
@@ -971,16 +901,17 @@ static void generateAsciidocForMember(MemberDef *md,FTextStream &t,Definition *d
         t << memberOutputFileBase(md);
       }
       t << "_1" << md->anchor() << "\">" << endl;
-      t << "                <title>" << convertToAsciidoc(md->definition()) << " " << convertToAsciidoc(md->argsString()) << "</title>";
+      t << "=== 5" << convertToAsciidoc(md->definition()) << " " << convertToAsciidoc(md->argsString()) << endl;
+      t << endl;
       addIndexTerm(t,md->name(),def->name());
       addIndexTerm(t,def->name(),md->name());
       if(Config_getBool(REPEAT_BRIEF))
       {
         if (!md->briefDescription().isEmpty())
         {
-          t << " <emphasis>";
+          t << " __";
           writeAsciidocString(t,md->briefDescription());
-          t << "</emphasis>" << endl;
+          t << "__ " << endl;
         }
       }
       t << "                ";
@@ -996,13 +927,13 @@ static void generateAsciidocForMember(MemberDef *md,FTextStream &t,Definition *d
         generateSourceRefList(t,md->name(),theTranslator->trReferences(),md->getReferencesMembers(),md);
       }
       generateInlineCode(t,md->name(),md);
-      t << "            </section>" << endl;
+      t << endl;
     }
     else if (md->memberType()==MemberType_Define)
     {
       if (md->documentation())
       {
-        t << "            <section xml:id=\"_";
+        t << "<section xml:id=\"_";
         if (md->getGroupDef() && def->definitionType()==Definition::TypeGroup)
         {
           t << md->getGroupDef()->getOutputFileBase();
@@ -1012,11 +943,10 @@ static void generateAsciidocForMember(MemberDef *md,FTextStream &t,Definition *d
           t << memberOutputFileBase(md);
         }
         t << "_1" << md->anchor() << "\">" << endl;
-        t << "                <title>" << convertToAsciidoc(md->definition()) << "</title>";
-        t << "                ";
+        t << "== 6" << convertToAsciidoc(md->definition()) << endl;
         writeAsciidocDocBlock(t,md->docFile(),md->docLine(),md->getOuterScope(),md,md->documentation());
         t << endl;
-        t << "            </section>" << endl;
+        t << endl;
       }
     }
     else if (md->memberType()==MemberType_Variable)
@@ -1025,7 +955,7 @@ static void generateAsciidocForMember(MemberDef *md,FTextStream &t,Definition *d
       {
         if (md->documentation())
         {
-          t << "            <section xml:id=\"_";
+          t << "<section xml:id=\"_";
           if (md->getGroupDef() && def->definitionType()==Definition::TypeGroup)
           {
             t << md->getGroupDef()->getOutputFileBase();
@@ -1035,18 +965,19 @@ static void generateAsciidocForMember(MemberDef *md,FTextStream &t,Definition *d
             t << memberOutputFileBase(md);
           }
           t << "_1" << md->anchor() << "\">" << endl;
-          t << "                <title>" << convertToAsciidoc(md->definition()) << "</title>";
+          t << "===4 " << convertToAsciidoc(md->definition()) << endl;
+	  t << endl;
           addIndexTerm(t,md->name(),def->name());
           addIndexTerm(t,def->name(),md->name());
           t << "                ";
           writeAsciidocDocBlock(t,md->docFile(),md->docLine(),md->getOuterScope(),md,md->documentation());
           t << endl;
-          t << "            </section>" << endl;
+          t << endl;
         }
       }
       else
       {
-        t << "            <section xml:id=\"_";
+        t << "<section xml:id=\"_";
         if (md->getGroupDef() && def->definitionType()==Definition::TypeGroup)
         {
           t << md->getGroupDef()->getOutputFileBase();
@@ -1056,19 +987,19 @@ static void generateAsciidocForMember(MemberDef *md,FTextStream &t,Definition *d
           t << memberOutputFileBase(md);
         }
         t << "_1" << md->anchor() << "\">" << endl;
-        t << "                <title>" << convertToAsciidoc(md->definition()) << "</title>";
+        t << "=== 7" << convertToAsciidoc(md->definition()) << endl;
         addIndexTerm(t,md->name(),def->name());
         addIndexTerm(t,def->name(),md->name());
         if(Config_getBool(REPEAT_BRIEF))
         {
-            t << " <emphasis>";
+            t << " __";
             writeAsciidocString(t,md->briefDescription());
-            t << "</emphasis>" << endl;
+            t << "__" << endl;
         }
         t << "                ";
         writeAsciidocDocBlock(t,md->docFile(),md->docLine(),md->getOuterScope(),md,md->documentation());
         t << endl;
-        t << "            </section>" << endl;
+        t << endl;
       }
     }
   }
@@ -1138,33 +1069,36 @@ static void generateAsciidocSection(Definition *d,FTextStream &t,MemberList *ml,
 
     if (!QCString(header).isEmpty())
     {
-      t << "        <section>" << endl;
-      t << "            <title>" << convertToAsciidoc(header) << "</title>" << endl;
+      t << "== 8" << convertToAsciidoc(header)  << endl;
     }
     else if (desctitle)
     {
-      t << "        <section>" << endl;
-      t << "            <title>" << desctitle << "</title>" << endl;
+      t << "== 9" << desctitle << endl;
     }
+    t << endl;
   }
   else
   {
-    t << "        <section>" << endl;
     if (!QCString(header).isEmpty())
     {
-      t << "            <title>" << convertToAsciidoc(header) << "</title>" << endl;
+      t << "== 10" << convertToAsciidoc(header) << endl;
+	t << endl;
     }
     else
     {
-      t << "            <title>" << title << "</title>" << endl;
+	t << "== 11" << title << endl;
+	t << endl;
     }
     if (!subtitle.isEmpty())
-      t << "            <para>" << subtitle << "</para>" << endl;
+    {
+      t << "=== 12" << subtitle << endl;
+      t << endl;
+    }
   }
 
   if (documentation)
   {
-    t << "      <description>";
+    t << "<description>";
     writeAsciidocDocBlock(t,d->docFile(),d->docLine(),d,0,documentation);
     t << "</description>" << endl;
   }
@@ -1182,21 +1116,6 @@ static void generateAsciidocSection(Definition *d,FTextStream &t,MemberList *ml,
         generateAsciidocForMember(md,t,d,detailed);
     }
   }
-  if (detailed)
-  {
-    if (!QCString(header).isEmpty())
-    {
-      t << "        </section>" << endl;
-    }
-    else if (desctitle)
-    {
-      t << "        </section>" << endl;
-    }
-  }
-  else
-  {
-    t << "        </section>" << endl;
-  }
 }
 
 static void writeInnerClasses(const ClassSDict *cl,FTextStream &t)
@@ -1209,32 +1128,21 @@ static void writeInnerClasses(const ClassSDict *cl,FTextStream &t)
 
     if (cli.toFirst())
     {
-      t << "        <section>" << endl;
-      t << "            <title> " << title << " </title>" << endl;
+      t << "=== 13" << title << endl;
+      t << endl;
     }
     for (cli.toFirst();(cd=cli.current());++cli)
     {
       if (!cd->isHidden() && cd->name().find('@')==-1)
       {
-        t << "            <para>" << endl;
-        t << "                <itemizedlist>" << endl;
-        t << "                    <listitem>" << endl;
-        t << "                        <para>" << "struct <link linkend=\"_" << classOutputFileBase(cd) << "\">" << convertToAsciidoc(cd->name()) << "</link>";
-        t << "</para>" << endl;
+	  t << "*3 struct 8[[_" << classOutputFileBase(cd) << "," << convertToAsciidoc(cd->name()) << "]]" << endl;
         if (cd->briefDescription())
         {
-            t << "<para><emphasis>";
+            t << " __";
             writeAsciidocString(t,cd->briefDescription());
-            t << "</emphasis></para>" << endl;
+            t << "__" << endl;
         }
-        t << "                    </listitem>" << endl;
-        t << "                </itemizedlist>" << endl;
-        t << "            </para>" << endl;
       }
-    }
-    if (cli.toFirst())
-    {
-      t << "        </section>" << endl;
     }
   }
 }
@@ -1249,26 +1157,15 @@ static void writeInnerNamespaces(const NamespaceSDict *nl,FTextStream &t)
 
     if (nli.toFirst())
     {
-      t << "        <simplesect>" << endl;
-      t << "            <title> " << title << " </title>" << endl;
+      t << "==== 14" << title << endl;
+      t << endl;
     }
     for (nli.toFirst();(nd=nli.current());++nli)
     {
       if (!nd->isHidden() && nd->name().find('@')==-1) // skip anonymous scopes
       {
-        t << "            <para>" << endl;
-        t << "                <itemizedlist>" << endl;
-        t << "                    <listitem>" << endl;
-        t << "                        <para>" << "struct <link linkend=\"_" << nd->getOutputFileBase() << "\">" << convertToAsciidoc(nd->name()) << "</link>";
-        t << "</para>" << endl;
-        t << "                    </listitem>" << endl;
-        t << "                </itemizedlist>" << endl;
-        t << "            </para>" << endl;
+	  t << "*4 struct 9[[_" << nd->getOutputFileBase() << "," << convertToAsciidoc(nd->name()) << "]]" << endl;
       }
-    }
-    if (nli.toFirst())
-    {
-      t << "        </simplesect>" << endl;
     }
   }
 }
@@ -1283,24 +1180,14 @@ static void writeInnerFiles(const FileList *fl,FTextStream &t)
 
     if (fli.toFirst())
     {
-      t << "        <simplesect>" << endl;
-      t << "            <title> " << title << " </title>" << endl;
+      t << "==== 15" << title << endl;
+      t << endl;
     }
     for (fli.toFirst();(fd=fli.current());++fli)
     {
-      t << "            <para>" << endl;
-      t << "                <itemizedlist>" << endl;
-      t << "                    <listitem>" << endl;
-      t << "                        <para>" << "file <link linkend=\"_" << fd->getOutputFileBase() << "\">" << convertToAsciidoc(fd->name()) << "</link>";
-      t << "</para>" << endl;
-      t << "                    </listitem>" << endl;
-      t << "                </itemizedlist>" << endl;
-      t << "            </para>" << endl;
+      t << "*5 file 10[[_" << fd->getOutputFileBase() << "," << convertToAsciidoc(fd->name()) << "]]" << endl;
     }
-    if (fli.toFirst())
-    {
-      t << "        </simplesect>" << endl;
-    }
+    t << endl;
   }
 }
 
@@ -1328,25 +1215,20 @@ static void writeInnerGroups(const GroupList *gl,FTextStream &t)
     //Asciidoc header tags for inner groups
     if (gli.toFirst())
     {
-      t << "    <simplesect>" << endl;
-      t << "        <title>" << theTranslator->trModules() << "</title>" << endl;
-      t << "    </simplesect>" << endl;
-      t << "    <para>" << endl;
-      t << "        <itemizedlist>" << endl;
+      t << "== 16" << theTranslator->trModules() << endl;
+      t << endl;
     }
 
     for (gli.toFirst();(sgd=gli.current());++gli)
     {
-      t << "            <listitem><para><link linkend=\"_" << sgd->getOutputFileBase() << "\">" << convertToAsciidoc(sgd->groupTitle()) << "</link></para></listitem>" << endl;
+	t << "*6 <<_" << sgd->getOutputFileBase() << "," << convertToAsciidoc(sgd->groupTitle()) << ">>" << endl;
     }
 
     //Asciidoc footer tags for inner groups
     if (gli.toFirst())
     {
-      t << "        </itemizedlist>" << endl;
-      t << "    </para>" << endl;
+      t << endl;
     }
-
   }
 }
 
@@ -1359,23 +1241,16 @@ static void writeInnerDirs(const DirList *dl,FTextStream &t)
     QCString title = theTranslator->trDirectories();
     if (subdirs.toFirst())
     {
-      t << "        <simplesect>" << endl;
-      t << "            <title> " << title << " </title>" << endl;
+      t << "== 17" << title << endl;
+      t << endl;
     }
     for (subdirs.toFirst();(subdir=subdirs.current());++subdirs)
     {
-      t << "            <para>" << endl;
-      t << "                <itemizedlist>" << endl;
-      t << "                    <listitem>" << endl;
-      t << "                        <para>" << "dir <link linkend=\"_" << subdir->getOutputFileBase() << "\">" << convertToAsciidoc(subdir->displayName()) << "</link>";
-      t << "</para>" << endl;
-      t << "                    </listitem>" << endl;
-      t << "                </itemizedlist>" << endl;
-      t << "            </para>" << endl;
+	t << "*7 " << subdir->getOutputFileBase() << "," << convertToAsciidoc(subdir->displayName()) << ">>";
     }
     if (subdirs.toFirst())
     {
-      t << "        </simplesect>" << endl;
+      t << endl;
     }
   }
 }
@@ -1421,7 +1296,7 @@ static void generateAsciidocForClass(ClassDef *cd,FTextStream &ti)
 
   QCString fileAsciidoc=cd->getOutputFileBase()+".xml";
   //Add the file Documentation info to index file
-  ti << "        <xi:include href=\"" << fileAsciidoc << "\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
+  ti << "<xi:include href=\"" << fileAsciidoc << "\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
 
   QCString outputDirectory = Config_getString(ASCIIDOC_OUTPUT);
   QCString fileName=outputDirectory+"/"+ classOutputFileBase(cd)+".xml";
@@ -1436,16 +1311,15 @@ static void generateAsciidocForClass(ClassDef *cd,FTextStream &ti)
   //t.setEncoding(FTextStream::UnicodeUTF8);
 
   writeAsciidocHeader_ID(t, classOutputFileBase(cd));
-  t << "<title>";
+  t << "== 18";
   writeAsciidocString(t,cd->name());
   addIndexTerm(t,cd->name());
-  t << " " << cd->compoundTypeString() << " Reference";
-  t << "</title>" << endl;
+  t << " " << cd->compoundTypeString() << " Reference" << endl;
   if (cd->briefDescription())
   {
-    t << "    <para>" << endl;
+    t << endl;
     writeAsciidocDocBlock(t,cd->briefFile(),cd->briefLine(),cd,0,cd->briefDescription());
-    t << "    </para>" << endl;
+    t << endl;
   }
 
   IncludeInfo *ii=cd->includeInfo();
@@ -1455,11 +1329,10 @@ static void generateAsciidocForClass(ClassDef *cd,FTextStream &ti)
     if (nm.isEmpty() && ii->fileDef) nm = ii->fileDef->docName();
     if (!nm.isEmpty())
     {
-      t << "<para>" << endl;
-      t << "    <programlisting>#include ";
+      t << "<programlisting>#include ";
       if (ii->fileDef && !ii->fileDef->isReference()) // TODO: support external references
       {
-        t << "<link linkend=\"_" << ii->fileDef->getOutputFileBase() << "\">";
+        t << "11[[_" << ii->fileDef->getOutputFileBase() << ",";
       }
       if (ii->local)
       {
@@ -1483,20 +1356,23 @@ static void generateAsciidocForClass(ClassDef *cd,FTextStream &ti)
         t << "</link>";
       }
       t << "</programlisting>" << endl;
-      t << "</para>" << endl;
+      t << endl;
     }
   }
 
   if (Config_getBool(HAVE_DOT) && (Config_getBool(CLASS_DIAGRAMS) || Config_getBool(CLASS_GRAPH)))
   {
-    t << "<para>Inheritance diagram for " << convertToAsciidoc(cd->name()) << "</para>" << endl;
+    t << endl;
+    t << "Inheritance diagram for " << convertToAsciidoc(cd->name()) << endl;
+    t << endl;
     DotClassGraph inheritanceGraph(cd,DotNode::Inheritance);
     inheritanceGraph.writeGraph(t,GOF_BITMAP,EOF_Asciidoc,Config_getString(ASCIIDOC_OUTPUT),fileName,relPath,TRUE,FALSE);
   }
 
   if (Config_getBool(HAVE_DOT) && Config_getBool(COLLABORATION_GRAPH))
   {
-    t << "<para>Collaboration diagram for " << convertToAsciidoc(cd->name()) << "</para>" << endl;
+    t << endl;
+    t << "Collaboration diagram for " << convertToAsciidoc(cd->name()) << endl;
     DotClassGraph collaborationGraph(cd,DotNode::Collaboration);
     collaborationGraph.writeGraph(t,GOF_BITMAP,EOF_Asciidoc,Config_getString(ASCIIDOC_OUTPUT),fileName,relPath,TRUE,FALSE);
   }
@@ -1527,18 +1403,19 @@ static void generateAsciidocForClass(ClassDef *cd,FTextStream &ti)
 
   if ((Config_getBool(REPEAT_BRIEF) && cd->briefDescription()) || cd->documentation())
   {
-    t << "        <simplesect>" << endl;
-    t << "            <title>" << theTranslator->trDetailedDescription() << "</title>" << endl;
+    t << endl;
+    t << "=== 19" << theTranslator->trDetailedDescription() << endl;
+    t << endl;
 
     if(Config_getBool(REPEAT_BRIEF))
     {
       if (cd->briefDescription())
       {
-          t << "    <para>" << endl;
+          t << endl;
           // A title as 'Brief Description' may not be necessary.
-          //t << "        <title>" << theTranslator->trBriefDescription() << "</title>" << endl;
+          //t << "<title>" << theTranslator->trBriefDescription() << "</title>" << endl;
           writeAsciidocDocBlock(t,cd->briefFile(),cd->briefLine(),cd,0,cd->briefDescription());
-          t << "    </para>" << endl;
+          t << endl;
       }
     }
 
@@ -1546,7 +1423,7 @@ static void generateAsciidocForClass(ClassDef *cd,FTextStream &ti)
     {
       writeAsciidocDocBlock(t,cd->docFile(),cd->docLine(),cd,0,cd->documentation());
     }
-    t << "        </simplesect>" << endl;
+    t << endl;
   }
 
   if (cd->getMemberGroupSDict())
@@ -1568,41 +1445,12 @@ static void generateAsciidocForClass(ClassDef *cd,FTextStream &ti)
     }
   }
 
-  /*// TODO: Handling of Inheritance and Colloboration graph for Asciidoc to be implemented
-    DotClassGraph inheritanceGraph(cd,DotNode::Inheritance);
-    if (!inheritanceGraph.isTrivial())
-    {
-    t << "    <inheritancegraph>" << endl;
-    inheritanceGraph.writeAsciidoc(t);
-    t << "    </inheritancegraph>" << endl;
-    }
-    DotClassGraph collaborationGraph(cd,DotNode::Collaboration);
-    if (!collaborationGraph.isTrivial())
-    {
-    t << "    <collaborationgraph>" << endl;
-    collaborationGraph.writeAsciidoc(t);
-    t << "    </collaborationgraph>" << endl;
-    }
-    t << "    <location file=\""
-    << cd->getDefFileName() << "\" line=\""
-    << cd->getDefLine() << "\"";
-    if (cd->getStartBodyLine()!=-1)
-    {
-    FileDef *bodyDef = cd->getBodyDef();
-    if (bodyDef)
-    {
-    t << " bodyfile=\"" << bodyDef->absFilePath() << "\"";
-    }
-    t << " bodystart=\"" << cd->getStartBodyLine() << "\" bodyend=\""
-    << cd->getEndBodyLine() << "\"";
-    }
-    t << "/>" << endl;
-    writeListOfAllMembers(cd,t);
-   */
+  /*// TODO: Handling of Inheritance and Colloboration graph for Asciidoc to be implemented */
 
-  t << "                <para>" << cd->generatedFromFiles() << "</para>" << endl;
-  t << "                <para><itemizedlist><listitem><para>" << stripPath(cd->getDefFileName()) << "</para></listitem></itemizedlist></para>" << endl;
-  t << "</section>" << endl;
+  t << "== 20" << cd->generatedFromFiles() << endl;
+  t << endl;
+  t << "*8 " << stripPath(cd->getDefFileName()) << endl;
+  t << endl;
 
 }
 
@@ -1621,7 +1469,7 @@ static void generateAsciidocForNamespace(NamespaceDef *nd,FTextStream &ti)
 
   QCString fileAsciidoc=nd->getOutputFileBase()+".xml";
   //Add the file Documentation info to index file
-  ti << "        <xi:include href=\"" << fileAsciidoc << "\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
+  ti << "<xi:include href=\"" << fileAsciidoc << "\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
 
   QCString outputDirectory = Config_getString(ASCIIDOC_OUTPUT);
   QCString fileName=outputDirectory+"/"+nd->getOutputFileBase()+".xml";
@@ -1635,16 +1483,15 @@ static void generateAsciidocForNamespace(NamespaceDef *nd,FTextStream &ti)
   //t.setEncoding(FTextStream::UnicodeUTF8);
 
   writeAsciidocHeader_ID(t, nd->getOutputFileBase());
-  t << "<title>";
+  t << "== 21";
   addIndexTerm(t,nd->displayName());
   writeAsciidocString(t,nd->title());
-  t << "</title>" << endl;
+  t << endl;
+  t << endl;
 
   if (nd->briefDescription())
   {
-      t << "    <para>" << endl;
-          //t << "        <title>" << theTranslator->trBriefDescription() << "</title>" << endl;
-      t << "    </para>" << endl;
+          //t << "<title>" << theTranslator->trBriefDescription() << "</title>" << endl;
   }
   writeInnerClasses(nd->getClassSDict(),t);
   writeInnerNamespaces(nd->getNamespaceSDict(),t);
@@ -1672,17 +1519,17 @@ static void generateAsciidocForNamespace(NamespaceDef *nd,FTextStream &ti)
 
   if ((Config_getBool(REPEAT_BRIEF) && nd->briefDescription()) || nd->documentation())
   {
-    t << "        <simplesect>" << endl;
-    t << "            <title>" << theTranslator->trDetailedDescription() << "</title>" << endl;
+    t << "=== 22" << theTranslator->trDetailedDescription() << endl;
+    t << endl;
 
     if(Config_getBool(REPEAT_BRIEF))
     {
       if (nd->briefDescription())
       {
-          t << "    <para>" << endl;
-          //t << "        <title>" << theTranslator->trBriefDescription() << "</title>" << endl;
+          //t << "== " << theTranslator->trBriefDescription() << endl;
+	  //t << endl;
           writeAsciidocDocBlock(t,nd->briefFile(),nd->briefLine(),nd,0,nd->briefDescription());
-          t << "    </para>" << endl;
+          t << endl;
       }
     }
 
@@ -1690,7 +1537,7 @@ static void generateAsciidocForNamespace(NamespaceDef *nd,FTextStream &ti)
     {
       writeAsciidocDocBlock(t,nd->docFile(),nd->docLine(),nd,0,nd->documentation());
     }
-    t << "        </simplesect>" << endl;
+    t << endl;
   }
 
   if (nd->getMemberGroupSDict())
@@ -1713,10 +1560,10 @@ static void generateAsciidocForNamespace(NamespaceDef *nd,FTextStream &ti)
         generateAsciidocSection(nd,t,ml,g_asciidocSectionMapper.find(ml->listType()),1);
     }
   }
-  // we actually need here "namespace"
-  // t << "                <para>" << theTranslator->trGeneratedFromFiles(ClassDef::Struct, FALSE) << "</para>" << endl;
-  // t << "                <para><itemizedlist><listitem><para>" << stripPath(nd->getDefFileName()) << "</para></listitem></itemizedlist></para>" << endl;
-  t << "</section>" << endl;
+  // we actually need "namespace"
+  // t << theTranslator->trGeneratedFromFiles(ClassDef::Struct, FALSE) << endl;
+  // t << "* << stripPath(nd->getDefFileName()) << endl;
+  t << endl;
 }
 
 static void generateAsciidocForFile(FileDef *fd,FTextStream &ti)
@@ -1739,7 +1586,7 @@ static void generateAsciidocForFile(FileDef *fd,FTextStream &ti)
 
   QCString fileAsciidoc=fd->getOutputFileBase()+".xml";
   //Add the file Documentation info to index file
-  ti << "        <xi:include href=\"" << fileAsciidoc << "\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
+  ti << "<xi:include href=\"" << fileAsciidoc << "\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
 
   QCString outputDirectory = Config_getString(ASCIIDOC_OUTPUT);
   QCString fileName=outputDirectory+"/"+fd->getOutputFileBase()+".xml";
@@ -1755,16 +1602,15 @@ static void generateAsciidocForFile(FileDef *fd,FTextStream &ti)
   //t.setEncoding(FTextStream::UnicodeUTF8);
   writeAsciidocHeader_ID(t, fd->getOutputFileBase());
 
-  t << "    <title>";
+  t << "== 23";
   writeAsciidocString(t,fd->name());
-  t << " File Reference";
-  t << "</title>" << endl;
+  t << " File Reference" << endl;
+  t << endl;
 
   if (fd->briefDescription())
   {
-    t << "    <para>" << endl;
     writeAsciidocDocBlock(t,fd->briefFile(),fd->briefLine(),fd,0,fd->briefDescription());
-    t << "    </para>" << endl;
+    t << endl;
   }
 
   IncludeInfo *inc;
@@ -1774,7 +1620,7 @@ static void generateAsciidocForFile(FileDef *fd,FTextStream &ti)
     QListIterator<IncludeInfo> ili1(*fd->includeFileList());
     for (ili1.toFirst();(inc=ili1.current());++ili1)
     {
-      t << "    <programlisting>#include ";
+      t << "<programlisting>#include ";
       if (inc->local)
       {
         t << "&quot;";
@@ -1799,13 +1645,17 @@ static void generateAsciidocForFile(FileDef *fd,FTextStream &ti)
   {
     if (Config_getBool(INCLUDE_GRAPH))
     {
-      t << "<para>Include dependency diagram for " << convertToAsciidoc(fd->name()) << "</para>" << endl;
+      t << endl;
+      t << "Include dependency diagram for " << convertToAsciidoc(fd->name()) << endl;
+      t << endl;
       DotInclDepGraph idepGraph(fd, FALSE);
       idepGraph.writeGraph(t,GOF_BITMAP,EOF_Asciidoc,Config_getString(ASCIIDOC_OUTPUT),fileName,relPath,FALSE);
     }
     if (Config_getBool(INCLUDED_BY_GRAPH))
     {
-      t << "<para>Included by dependency diagram for " << convertToAsciidoc(fd->name()) << "</para>" << endl;
+      t << endl;
+      t << "Included by dependency diagram for " << convertToAsciidoc(fd->name()) << endl;
+      t << endl;
       DotInclDepGraph ibdepGraph(fd, TRUE);
       ibdepGraph.writeGraph(t,GOF_BITMAP,EOF_Asciidoc,Config_getString(ASCIIDOC_OUTPUT),fileName,relPath,FALSE);
     }
@@ -1841,8 +1691,8 @@ static void generateAsciidocForFile(FileDef *fd,FTextStream &ti)
     }
   }
 
-  t << "    <simplesect>" << endl;
-  t << "        <title>" << theTranslator->trDetailedDescription() << "</title>" << endl;
+  t << "=== 24" << endl << theTranslator->trDetailedDescription() << endl;
+  t << endl;
   if(Config_getBool(REPEAT_BRIEF))
   {
     if (fd->briefDescription())
@@ -1853,13 +1703,13 @@ static void generateAsciidocForFile(FileDef *fd,FTextStream &ti)
   writeAsciidocDocBlock(t,fd->docFile(),fd->docLine(),fd,0,fd->documentation());
   if (Config_getBool(FULL_PATH_NAMES))
   {
-    t << "    <para>Definition in file " << fd->getDefFileName() << "</para>" << endl;
+    t << "Definition in file " << fd->getDefFileName() << endl;
   }
   else
   {
-    t << "    <para>Definition in file " << stripPath(fd->getDefFileName()) << "</para>" << endl;
+    t << "Definition in file " << stripPath(fd->getDefFileName()) << endl;  
   }
-  t << "    </simplesect>" << endl;
+  t << endl;
 
   for (mli.toFirst();(ml=mli.current());++mli)
   {
@@ -1871,12 +1721,12 @@ static void generateAsciidocForFile(FileDef *fd,FTextStream &ti)
 
   if (Config_getBool(ASCIIDOC_PROGRAMLISTING))
   {
-    t << "    <literallayout><computeroutput>" << endl;;
+    t << "[literal]" << endl;;
     writeAsciidocCodeBlock(t,fd);
-    t << "    </computeroutput></literallayout>" << endl;
+    t << endl;
   }
 
-  t << "</section>" << endl;
+  t << endl; // end section
 }
 
 static void generateAsciidocForGroup(GroupDef *gd,FTextStream &ti)
@@ -1899,7 +1749,7 @@ static void generateAsciidocForGroup(GroupDef *gd,FTextStream &ti)
   {
     QCString fileAsciidoc=gd->getOutputFileBase()+".xml";
     //Add the file Documentation info to index file
-    ti << "        <xi:include href=\"" << fileAsciidoc << "\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
+    ti << "<xi:include href=\"" << fileAsciidoc << "\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
   }
 
   QCString outputDirectory = Config_getString(ASCIIDOC_OUTPUT);
@@ -1917,17 +1767,18 @@ static void generateAsciidocForGroup(GroupDef *gd,FTextStream &ti)
   //t.setEncoding(FTextStream::UnicodeUTF8);
   writeAsciidocHeader_ID(t, gd->getOutputFileBase());
 
-  t << "    <title>" << convertToAsciidoc(gd->groupTitle()) << "</title>" << endl;
+  t << "=== 25" << convertToAsciidoc(gd->groupTitle()) << endl;
+  t << endl;
   if (gd->briefDescription())
   {
-      t << "    <para>" << endl;
       writeAsciidocDocBlock(t,gd->briefFile(),gd->briefLine(),gd,0,gd->briefDescription());
-      t << "    </para>" << endl;
+      t << endl;
   }
 
   if (Config_getBool(GROUP_GRAPHS) && Config_getBool(HAVE_DOT))
   {
-    t << "<para>Collaboration diagram for " << convertToAsciidoc(gd->groupTitle()) << "</para>" << endl;
+    t << "Collaboration diagram for " << convertToAsciidoc(gd->groupTitle()) << endl;
+    t << endl;
     DotGroupCollaboration collaborationGraph(gd);
     collaborationGraph.writeGraph(t,GOF_BITMAP,EOF_Asciidoc,Config_getString(ASCIIDOC_OUTPUT),fileName,relPath,FALSE);
   }
@@ -1963,19 +1814,17 @@ static void generateAsciidocForGroup(GroupDef *gd,FTextStream &ti)
   {
     if (gd->briefDescription())
     {
-      //t << "    <section>" << endl;
-      //t << "        <title>" << theTranslator->trBriefDescription() << "</title>" << endl;
+      //t << "== theTranslator->trBriefDescription() << endl;
       writeAsciidocDocBlock(t,gd->briefFile(),gd->briefLine(),gd,0,gd->briefDescription());
-      //t << "    </section>" << endl;
     }
   }
 
   if (gd->documentation())
   {
-    t << "        <simplesect>" << endl;
-    t << "            <title>" << theTranslator->trDetailedDescription() << "</title>" << endl;
+    t << "==== 26" << theTranslator->trDetailedDescription() << endl;
+    t << endl;
     writeAsciidocDocBlock(t,gd->docFile(),gd->docLine(),gd,0,gd->documentation());
-    t << "        </simplesect>" << endl;
+    t << endl;
   }
 
   for (mli.toFirst();(ml=mli.current());++mli)
@@ -1987,9 +1836,6 @@ static void generateAsciidocForGroup(GroupDef *gd,FTextStream &ti)
   }
 
   writeInnerGroupFiles(gd->getSubGroups(),t);
-
-  t << "</section>" << endl;
-
 }
 
 static void generateAsciidocForDir(DirDef *dd,FTextStream &ti)
@@ -1998,7 +1844,7 @@ static void generateAsciidocForDir(DirDef *dd,FTextStream &ti)
 
   QCString fileAsciidoc=dd->getOutputFileBase()+".xml";
   //Add the file Documentation info to index file
-  ti << "        <xi:include href=\"" << fileAsciidoc << "\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
+  ti << "<xi:include href=\"" << fileAsciidoc << "\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
 
   QCString outputDirectory = Config_getString(ASCIIDOC_OUTPUT);
   QCString fileName=outputDirectory+"/"+dd->getOutputFileBase()+".xml";
@@ -2015,16 +1861,18 @@ static void generateAsciidocForDir(DirDef *dd,FTextStream &ti)
   //t.setEncoding(FTextStream::UnicodeUTF8);
   writeAsciidocHeader_ID(t, dd->getOutputFileBase());
 
-  t << "    <title>";
+  t << "== 27";
   t << theTranslator->trDirReference(dd->displayName());
-  t << "</title>" << endl;
+  t << endl;
+  t << endl;
   if (dd->briefDescription())
   {
     writeAsciidocDocBlock(t,dd->briefFile(),dd->briefLine(),dd,0,dd->briefDescription());
   }
   if (Config_getBool(DIRECTORY_GRAPH) && Config_getBool(HAVE_DOT))
   {
-    t << "<para>Directory dependency diagram for " << convertToAsciidoc(dd->displayName()) << "</para>" << endl;
+    t << "Directory dependency diagram for " << convertToAsciidoc(dd->displayName()) << endl;
+    t << endl;
     DotDirDeps dirdepGraph(dd);
     dirdepGraph.writeGraph(t,GOF_BITMAP,EOF_Asciidoc,Config_getString(ASCIIDOC_OUTPUT),fileName,relPath,FALSE);
   }
@@ -2032,19 +1880,16 @@ static void generateAsciidocForDir(DirDef *dd,FTextStream &ti)
   writeInnerDirs(&dd->subDirs(),t);
   writeInnerFiles(dd->getFiles(),t);
 
-  t << "    <simplesect>" << endl;
-  t << "        <title>" << theTranslator->trDetailedDescription() << "</title>" << endl;
+  t << "==== 28" << theTranslator->trDetailedDescription() << endl;
+  t << endl;
   if (dd->briefDescription())
   {
-    t << "    <para>" << endl;
     writeAsciidocDocBlock(t,dd->briefFile(),dd->briefLine(),dd,0,dd->briefDescription());
-    t << "    </para>" << endl;
+    t << endl;
   }
   writeAsciidocDocBlock(t,dd->docFile(),dd->docLine(),dd,0,dd->documentation());
-  t << "    <para>Directory location is " << dd->name() << "</para>" << endl;
-  t << "    </simplesect>" << endl;
-
-  t << "</section>" << endl;
+  t << "Directory location is " << dd->name() << endl;
+  t << endl;
 }
 
 static void generateAsciidocForPage(PageDef *pd,FTextStream &ti,bool isExample)
@@ -2080,14 +1925,14 @@ static void generateAsciidocForPage(PageDef *pd,FTextStream &ti,bool isExample)
   if(isExample)
   {
     QCString fileAsciidoc=pageName+".xml";
-    ti << "        <xi:include href=\"" << fileAsciidoc << "\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
+    ti << "<xi:include href=\"" << fileAsciidoc << "\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
   }
 
   if (!pd->hasParentPage() && !isExample)
   {
     QCString fileAsciidoc=pageName+".xml";
     //Add the file Documentation info to index file
-    ti << "        <xi:include href=\"" << fileAsciidoc << "\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
+    ti << "<xi:include href=\"" << fileAsciidoc << "\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
     writeAsciidocHeaderMainpage(t,pageName);
   }
   else
@@ -2108,14 +1953,15 @@ static void generateAsciidocForPage(PageDef *pd,FTextStream &ti,bool isExample)
   if (si)
   {
     if ( pageName == "mainpage")
-      t << "    <title>" << convertToAsciidoc(theTranslator->trMainPage()) << "</title>" << endl;
+      t << "=== 29" << convertToAsciidoc(theTranslator->trMainPage()) << endl;
     else
-      t << "    <title>" << convertToAsciidoc(si->title) << "</title>" << endl;
+      t << "=== 30" << convertToAsciidoc(si->title) << endl;
   }
   else
   {
-    t << "    <title>" << convertToAsciidoc(pd->name()) << "</title>" << endl;
+    t << "=== 31" << convertToAsciidoc(pd->name()) << endl;
   }
+  t << endl;
 
   generateTOC(t, pd);
   if (isExample)
@@ -2129,15 +1975,6 @@ static void generateAsciidocForPage(PageDef *pd,FTextStream &ti,bool isExample)
         pd->documentation());
   }
   writeInnerPages(pd->getSubPages(),t);
-
-  if (!pd->hasParentPage() && !isExample)
-  {
-    t << endl << "</chapter>" << endl;
-  }
-  else
-  {
-    t << endl << "</section>" << endl;
-  }
 }
 void generateAsciidoc_v1()
 {
@@ -2203,9 +2040,8 @@ void generateAsciidoc_v1()
   //t.setEncoding(FTextStream::UnicodeUTF8);
 
   // write index header for Asciidoc which calls the structure file
-  t << "    <info>" << endl;
-  t << "    <title>" << convertToAsciidoc(dbk_projectName) << "</title>" << endl;
-  t << "    </info>" << endl;
+  t << "= " << convertToAsciidoc(dbk_projectName) << endl;
+  t << endl;
 
   // NAMESPACE DOCUMENTATION
   NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
@@ -2214,8 +2050,8 @@ void generateAsciidoc_v1()
   //Namespace Documentation index header
   if (nli.toFirst())
   {
-    t << "    <chapter>" << endl;
-    t << "        <title>Namespace Documentation</title>" << endl;
+    t << "== Namespace Documentation" << endl;
+    t << endl;
   }
 
   for (nli.toFirst();(nd=nli.current());++nli)
@@ -2225,10 +2061,6 @@ void generateAsciidoc_v1()
   }
 
   //Namespace Documentation index footer
-  if (nli.toFirst())
-  {
-    t << "    </chapter>" << endl;
-  }
 
   /** MAINPAGE DOCUMENTATION **/
 
@@ -2258,8 +2090,8 @@ void generateAsciidoc_v1()
   //Module group Documentation index header
   if (gli.toFirst())
   {
-    t << "    <chapter>" << endl;
-    t << "        <title>" << theTranslator->trModuleDocumentation() << "</title>" << endl;
+    t << "== 32" << theTranslator->trModuleDocumentation() << endl;
+    t << endl;
   }
 
   for (;(gd=gli.current());++gli)
@@ -2271,7 +2103,7 @@ void generateAsciidoc_v1()
   //Module group Documentation index footer
   if (gli.toFirst())
   {
-    t << "    </chapter>" << endl;
+    t << endl;
   }
 
   //CLASS DOCUMENTATION
@@ -2283,8 +2115,8 @@ void generateAsciidoc_v1()
     //Class Documentation index header
     if (cli.toFirst())
     {
-      t << "    <chapter>" << endl;
-      t << "        <title>" << theTranslator->trClassDocumentation() << "</title>" << endl;
+      t << "== 33" << theTranslator->trClassDocumentation() << endl;
+      t << endl;
     }
 
     for (cli.toFirst();(cd=cli.current());++cli)
@@ -2293,10 +2125,6 @@ void generateAsciidoc_v1()
     }
 
     //Class Documentation index footer
-    if (cli.toFirst())
-    {
-      t << "    </chapter>" << endl;
-    }
   }
 
   // FILE DOCUMENTATION
@@ -2310,8 +2138,8 @@ void generateAsciidoc_v1()
     //File Documentation index header
     if (fnli.toFirst())
     {
-      t << "    <chapter>" << endl;
-      t << "        <title>" << theTranslator->trFileDocumentation() << "</title>" << endl;
+      t << "== 34" << theTranslator->trFileDocumentation() << endl;
+      t << endl;
     }
 
     for (;(fn=fnli.current());++fnli)
@@ -2328,7 +2156,7 @@ void generateAsciidoc_v1()
     //File Documentation index footer
     if (fnli.toFirst())
     {
-      t << "    </chapter>" << endl;
+      t << endl;
     }
   }
 
@@ -2341,8 +2169,8 @@ void generateAsciidoc_v1()
     //Directory Documentation index header
     if (sdi.toFirst())
     {
-      t << "    <chapter>" << endl;
-      t << "        <title>" << theTranslator->trDirDocumentation() << "</title>" << endl;
+      t << "== 35" << theTranslator->trDirDocumentation() << endl;
+      t << endl;
     }
 
     for (sdi.toFirst();(dir=sdi.current());++sdi)
@@ -2354,7 +2182,7 @@ void generateAsciidoc_v1()
     //Module group Documentation index footer
     if (sdi.toFirst())
     {
-      t << "    </chapter>" << endl;
+      t << endl;
     }
   }
 
@@ -2367,8 +2195,8 @@ void generateAsciidoc_v1()
     //Example Page Documentation index header
     if (pdi.toFirst())
     {
-      t << "    <chapter>" << endl;
-      t << "        <title>" << theTranslator->trExampleDocumentation() << "</title>" << endl;
+      t << "== 36" << theTranslator->trExampleDocumentation() << endl;
+      t << endl;
     }
 
     for (pdi.toFirst();(pd=pdi.current());++pdi)
@@ -2380,7 +2208,7 @@ void generateAsciidoc_v1()
     //Example Page Documentation index footer
     if (pdi.toFirst())
     {
-      t << "    </chapter>" << endl;
+      t << endl;
     }
   }
 
@@ -2446,27 +2274,23 @@ DB_GEN_C
   }
   pageName = fileName;
   relPath = relativePathToRoot(fileName);
-  if (fileName.right(4)!=".xml") fileName+=".xml";
+  if (fileName.right(5)!=".adoc") fileName+=".adoc";
   startPlainFile(fileName);
   m_codeGen.setTextStream(t);
   m_codeGen.setRelativePath(relPath);
   m_codeGen.setSourceFileName(stripPath(fileName));
 
-  if (!pageName.isEmpty()) t << " xml:id=\"_" <<  stripPath(pageName) << "\"";
-  t << ">" << endl;
+  if (!pageName.isEmpty()) t << "12[[_" <<  stripPath(pageName) << "]]" << endl;
 }
 
 void AsciidocGenerator::endFile()
 {
 DB_GEN_C
-  if (m_inDetail) t << "</section>" << endl;
   m_inDetail = FALSE;
   while (m_inLevel != -1)
   {
-    t << "</section>" << endl;
     m_inLevel--;
   }
-  if (m_inGroup) t << "</section>" << endl;
   m_inGroup = FALSE;
 
   QCString fileType="section";
@@ -2479,7 +2303,6 @@ DB_GEN_C
   {
     fileType="chapter";
   }
-  t << "</" << fileType << ">" << endl;
   endPlainFile();
   m_codeGen.setSourceFileName("");
 }
@@ -2492,16 +2315,16 @@ DB_GEN_C2("IndexSections " << is)
     case isTitlePageStart:
       {
         QCString dbk_projectName = Config_getString(PROJECT_NAME);
-        t << "    <info>" << endl;
-        t << "    <title>" << convertToAsciidoc(dbk_projectName) << "</title>" << endl;
+        t << "<info>" << endl;
+        t << "== 37" << convertToAsciidoc(dbk_projectName) << endl;
+	t << endl;
         t << "    </info>" << endl;
       }
       break;
     case isTitlePageAuthor:
       break;
     case isMainPage:
-      t << "<chapter>" << endl;
-      t << "    <title>";
+      t << "== 38";
       break;
     case isModuleIndex:
       //Module Index}\n"
@@ -2525,28 +2348,22 @@ DB_GEN_C2("IndexSections " << is)
       //Annotated Page Index}\n"
       break;
     case isModuleDocumentation:
-      t << "<chapter>\n";
-      t << "    <title>";
+      t << "== 39";
       break;
     case isDirDocumentation:
-      t << "<chapter>\n";
-      t << "    <title>";
+      t << "== 40";
       break;
     case isNamespaceDocumentation:
-      t << "<chapter>\n";
-      t << "    <title>";
+      t << "== 41";
       break;
     case isClassDocumentation:
-      t << "<chapter>\n";
-      t << "    <title>";
+      t << "== 42";
       break;
     case isFileDocumentation:
-      t << "<chapter>\n";
-      t << "    <title>";
+      t << "== 43";
       break;
     case isExampleDocumentation:
-      t << "<chapter>\n";
-      t << "    <title>";
+      t << "== 44";
       break;
     case isPageDocumentation:
       break;
@@ -2568,9 +2385,6 @@ DB_GEN_C2("IndexSections " << is)
     case isTitlePageAuthor:
       break;
     case isMainPage:
-      t << "</title>" << endl;
-      t << "    <xi:include href=\"mainpage.xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
-      t << "</chapter>" << endl;
       break;
     case isModuleIndex:
       //t << "</chapter>" << endl;
@@ -2600,7 +2414,6 @@ DB_GEN_C2("IndexSections " << is)
       break;
     case isModuleDocumentation:
       {
-        t << "</title>" << endl;
         GroupSDict::Iterator gli(*Doxygen::groupSDict);
         GroupDef *gd;
         bool found=FALSE;
@@ -2608,7 +2421,7 @@ DB_GEN_C2("IndexSections " << is)
         {
           if (!gd->isReference())
           {
-            t << "    <xi:include href=\"" << gd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
+            t << "<xi:include href=\"" << gd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
             found=TRUE;
           }
         }
@@ -2616,15 +2429,14 @@ DB_GEN_C2("IndexSections " << is)
         {
           if (!gd->isReference())
           {
-            t << "    <xi:include href=\"" << gd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
+            t << "<xi:include href=\"" << gd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
           }
         }
       }
-      t << "</chapter>\n";
+      t << endl;
       break;
     case isDirDocumentation:
       {
-        t << "</title>" << endl;
         SDict<DirDef>::Iterator dli(*Doxygen::directories);
         DirDef *dd;
         bool found=FALSE;
@@ -2640,15 +2452,13 @@ DB_GEN_C2("IndexSections " << is)
         {
           if (dd->isLinkableInProject())
           {
-            t << "    <xi:include href=\"" << dd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
+            t << "<xi:include href=\"" << dd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
           }
         }
       }
-      t << "</chapter>\n";
       break;
     case isNamespaceDocumentation:
       {
-        t << "</title>" << endl;
         NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
         NamespaceDef *nd;
         bool found=FALSE;
@@ -2669,11 +2479,10 @@ DB_GEN_C2("IndexSections " << is)
           ++nli;
         }
       }
-      t << "</chapter>\n";
+      t << endl;
       break;
     case isClassDocumentation:
       {
-        t << "</title>" << endl;
         ClassSDict::Iterator cli(*Doxygen::classSDict);
         ClassDef *cd=0;
         bool found=FALSE;
@@ -2684,7 +2493,7 @@ DB_GEN_C2("IndexSections " << is)
              !cd->isEmbeddedInOuterScope()
              )
           {
-            t << "    <xi:include href=\"" << cd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
+            t << "<xi:include href=\"" << cd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
             found=TRUE;
           }
         }
@@ -2695,15 +2504,14 @@ DB_GEN_C2("IndexSections " << is)
              !cd->isEmbeddedInOuterScope()
              )
           {
-            t << "    <xi:include href=\"" << cd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
+            t << "<xi:include href=\"" << cd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
           } 
         }
       }
-      t << "</chapter>\n";
+      t << endl;
       break;
     case isFileDocumentation:
       {
-        t << "</title>" << endl;
         bool isFirst=TRUE;
         FileNameListIterator fnli(*Doxygen::inputNameList); 
         FileName *fn;
@@ -2717,19 +2525,19 @@ DB_GEN_C2("IndexSections " << is)
             {
               if (isFirst)
               {
-                t << "    <xi:include href=\"" << fd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
+                t << "<xi:include href=\"" << fd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
                 if (sourceBrowser && m_prettyCode && fd->generateSourceFile())
                 {
-                  t << "    <xi:include href=\"" << fd->getSourceFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
+                  t << "<xi:include href=\"" << fd->getSourceFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
                 }
                 isFirst=FALSE;
               }
               else
               {
-                t << "    <xi:include href=\"" << fd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
+                t << "<xi:include href=\"" << fd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
                 if (sourceBrowser && m_prettyCode && fd->generateSourceFile())
                 {
-                  t << "    <xi:include href=\"" << fd->getSourceFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
+                  t << "<xi:include href=\"" << fd->getSourceFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
                 }
               }
             }
@@ -2740,16 +2548,15 @@ DB_GEN_C2("IndexSections " << is)
       break;
     case isExampleDocumentation:
       {
-        t << "</title>" << endl;
         PageSDict::Iterator pdi(*Doxygen::exampleSDict);
         PageDef *pd=pdi.toFirst();
         if (pd)
         {
-          t << "    <xi:include href=\"" << pd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
+          t << "<xi:include href=\"" << pd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
         }
         for (++pdi;(pd=pdi.current());++pdi)
         {
-          t << "    <xi:include href=\"" << pd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
+          t << "<xi:include href=\"" << pd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
         }
       }
       t << "</chapter>\n";
@@ -2772,17 +2579,16 @@ DB_GEN_C
   {
     if (!pd->getGroupDef() && !pd->isReference() && pd->name() == stripPath(name))
     {
-      t << "<chapter>\n";
       if (!pd->title().isEmpty())
       {
-        t << "    <title>" << convertToAsciidoc(pd->title()) << "</title>" << endl;
+        t << "== 45" << convertToAsciidoc(pd->title()) << endl;
       }
       else
       {
-        t << "    <title>" << convertToAsciidoc(pd->name()) << "</title>" << endl;
+        t << "== 46" << convertToAsciidoc(pd->name()) << endl;
       }
-      t << "    <xi:include href=\"" << pd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
-      t << "</chapter>\n";
+      t << endl;
+      t << "<xi:include href=\"" << pd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
     }
   }
 }
@@ -2798,13 +2604,13 @@ DB_GEN_C
 void AsciidocGenerator::startParagraph(const char *)
 {
 DB_GEN_C
-  t << "<para>" << endl;
+  t << endl;
 }
 
 void AsciidocGenerator::endParagraph()
 {
 DB_GEN_C
-  t << "</para>" << endl;
+  t << endl;
 }
 void AsciidocGenerator::writeString(const char *text)
 {
@@ -2814,15 +2620,15 @@ DB_GEN_C
 void AsciidocGenerator::startMemberHeader(const char *name,int)
 {
 DB_GEN_C
-  t << "<simplesect>" << endl;
+  t << "=== 48";
   m_inSimpleSect[m_levelListItem] = TRUE;
-  t << "    <title>";
 }
 
 void AsciidocGenerator::endMemberHeader()
 {
 DB_GEN_C
-  t << "    </title>" << endl;
+  t << endl;
+  t << endl;
 }
 void AsciidocGenerator::docify(const char *str)
 {
@@ -2830,12 +2636,12 @@ DB_GEN_C
   t << convertToAsciidoc(str);
 }
 void AsciidocGenerator::writeObjectLink(const char *ref, const char *f,
-                                     const char *anchor, const char *text)
+					const char *anchor, const char *text)
 {
 DB_GEN_C
   if (anchor)
   {
-    t << " <<_" << anchor;
+    t << "<<2_" << anchor;
     if (f) t << stripPath(f) << "_1";
   }
   else
@@ -2847,66 +2653,60 @@ DB_GEN_C
 void AsciidocGenerator::startMemberList()
 {
 DB_GEN_C
-  t << "        <itemizedlist>" << endl;
   m_levelListItem++;
 }
 void AsciidocGenerator::endMemberList()
 {
 DB_GEN_C
-  if (m_inListItem[m_levelListItem]) t << "</listitem>" << endl;
   m_inListItem[m_levelListItem] = FALSE;
-  t << "        </itemizedlist>" << endl;
   m_levelListItem = (m_levelListItem> 0 ?  m_levelListItem - 1 : 0);
-  if (m_inSimpleSect[m_levelListItem]) t << "</simplesect>" << endl;
   m_inSimpleSect[m_levelListItem] = FALSE;
+  t << endl;
 }
 void AsciidocGenerator::startMemberItem(const char *,int,const char *)
 {
 DB_GEN_C
-  if (m_inListItem[m_levelListItem]) t << "</listitem>" << endl;
-  t << "            <listitem><para>";
+  if (m_inListItem[m_levelListItem]) t << endl;
   m_inListItem[m_levelListItem] = TRUE;
 }
 void AsciidocGenerator::endMemberItem()
 {
 DB_GEN_C
-  t << "</para>" << endl;
+  t << endl;
 }
 void AsciidocGenerator::startBold(void)
 {
 DB_GEN_C
-  t << "<emphasis role=\"strong\">";
+  t << "**";
 }
 void AsciidocGenerator::endBold(void)
 {
 DB_GEN_C
-  t << "</emphasis>";
+  t << "**";
 }
 void AsciidocGenerator::startGroupHeader(int extraIndentLevel)
 {
 DB_GEN_C2("m_inLevel " << m_inLevel)
 DB_GEN_C2("extraIndentLevel " << extraIndentLevel)
   m_firstMember = TRUE; 
-  if (m_inSimpleSect[m_levelListItem]) t << "</simplesect>" << endl;
   m_inSimpleSect[m_levelListItem] = FALSE;
   if (m_inLevel != -1) m_inGroup = TRUE;
-  if (m_inLevel == extraIndentLevel) t << "</section>" << endl;
   m_inLevel = extraIndentLevel;
-  t << "<section>" << endl;
-  t << "<title>";
+  t << "=== 49";
 }
 void AsciidocGenerator::writeRuler(void)
 {
 DB_GEN_C2("m_inLevel " << m_inLevel)
 DB_GEN_C2("m_inGroup " << m_inGroup)
-  if (m_inGroup) t << "</section>" << endl;
+  if (m_inGroup) t << endl;
   m_inGroup = FALSE;
 }
 
 void AsciidocGenerator::endGroupHeader(int)
 {
 DB_GEN_C
-  t << "</title>" << endl;
+  t << endl;
+  t << endl;
 }
 
 void AsciidocGenerator::startParameterList(bool openBracket)
@@ -2931,12 +2731,12 @@ DB_GEN_C
 void AsciidocGenerator::startTypewriter()
 {
 DB_GEN_C
-  if (!m_denseText) t << "<computeroutput>";
+  if (!m_denseText) t << "``";
 }
 void AsciidocGenerator::endTypewriter()
 {
 DB_GEN_C
-  if (!m_denseText) t << "</computeroutput>" << endl;
+  if (!m_denseText) t << "``" << endl;
 }
 void AsciidocGenerator::startTextBlock(bool dense)
 {
@@ -2960,13 +2760,15 @@ void AsciidocGenerator::startMemberDoc(const char *clname, const char *memname, 
                                       int memCount, int memTotal, bool showInline)
 {
 DB_GEN_C2("m_inLevel " << m_inLevel)
-  t << "    <section>" << endl;
-  t << "    <title>" << convertToAsciidoc(title);
+  t << "==== 50" << convertToAsciidoc(title) << endl;
   if (memTotal>1)
   {
-    t << "<computeroutput>[" << memCount << "/" << memTotal << "]</computeroutput>";
+    t << "[source2]" << endl;
+    t << "----" << endl;
+    t << memCount << "/" << memTotal << "]";
+    t << "----" << endl;
   }
-  t << "</title>" << endl;
+  t << endl;
   if (memname && memname[0]!='@')
   {
     addIndexTerm(t,memname,clname);
@@ -2976,17 +2778,17 @@ DB_GEN_C2("m_inLevel " << m_inLevel)
 void AsciidocGenerator::endMemberDoc(bool)
 {
 DB_GEN_C
-  t << "</computeroutput></para>";
+  t << endl;
 }
 void AsciidocGenerator::startTitleHead(const char *)
 {
 DB_GEN_C
-  t << "<title>";
+  t << "== 51";
 }
 void AsciidocGenerator::endTitleHead(const char *fileName,const char *name)
 {
 DB_GEN_C
-  t << "</title>" << endl;
+  t << endl;
   if (name) addIndexTerm(t, name);
 }
 void AsciidocGenerator::startDoxyAnchor(const char *fName,const char *manName,
@@ -2996,12 +2798,11 @@ void AsciidocGenerator::startDoxyAnchor(const char *fName,const char *manName,
 DB_GEN_C
   if (!m_inListItem[m_levelListItem] && !m_descTable)
   {
-    if (!m_firstMember) t << "    </section>";
     m_firstMember = FALSE;
   }
   if (anchor)
   {
-    t << "<anchor xml:id=\"_" << stripPath(fName) << "_1" << anchor << "\"/>";
+      t << "13[[_" << stripPath(fName) << "_1" << anchor << "]]" << endl;
   }
 }
 void AsciidocGenerator::endDoxyAnchor(const char *fileName,const char *anchor)
@@ -3011,21 +2812,21 @@ DB_GEN_C
 void AsciidocGenerator::startMemberDocName(bool)
 {
 DB_GEN_C
-  t << "<para><computeroutput>";
+  t << "[source3]" << endl;
+  t << "----" << endl;
 }
 void AsciidocGenerator::endMemberDocName()
 {
 DB_GEN_C
+  t << "----" << endl;
 }
 void AsciidocGenerator::startMemberGroupHeader(bool hasHeader)
 {
 DB_GEN_C
-  t << "<simplesect><title>";
 }
 void AsciidocGenerator::endMemberGroupHeader()
 {
 DB_GEN_C
-  t << "</title>" << endl;
 }
 void AsciidocGenerator::startMemberGroup()
 {
@@ -3039,7 +2840,6 @@ DB_GEN_C
 void AsciidocGenerator::startClassDiagram()
 {
 DB_GEN_C
-  t << "<para>";
 }
 
 void AsciidocGenerator::endClassDiagram(const ClassDiagram &d, const char *fileName,const char *)
@@ -3048,7 +2848,8 @@ DB_GEN_C
   visitADPreStart(t, FALSE, relPath + fileName + ".png", NULL, NULL);
   d.writeImage(t,dir,relPath,fileName,FALSE);
   visitADPostEnd(t, FALSE);
-  t << "</para>" << endl;
+  t << endl;
+  t << endl;
 }
 void  AsciidocGenerator::startLabels()
 {
@@ -3058,36 +2859,38 @@ DB_GEN_C
 void  AsciidocGenerator::writeLabel(const char *l,bool isLast)
 {
 DB_GEN_C
-  t << "<computeroutput>[" << l << "]</computeroutput>";
+  t << "[source4]" << endl;
+  t << "----" << endl;
+  t << l << "]" << endl;
   if (!isLast) t << ", ";
 }
 
 void  AsciidocGenerator::endLabels()
 {
 DB_GEN_C
+  t << "----" << endl;
 }
 void AsciidocGenerator::startExamples()
 {
 DB_GEN_C
-  t << "<simplesect><title>";
+  t << "=== 52";
   docify(theTranslator->trExamples());
-  t << "</title>";
 }
 
 void AsciidocGenerator::endExamples()
 {
 DB_GEN_C
-  t << "</simplesect>" << endl;
+  t << endl;
 }
 void AsciidocGenerator::startSubsubsection(void)
 {
 DB_GEN_C
-  t << "<simplesect><title>";
+  t << "=== 53";
 }
 void AsciidocGenerator::endSubsubsection(void)
 {
 DB_GEN_C
-  t << "</title></simplesect>" << endl;
+  t << endl;
 }
 void AsciidocGenerator::writeChar(char c)
 {
@@ -3100,12 +2903,12 @@ DB_GEN_C
 void AsciidocGenerator::startMemberDocPrefixItem()
 {
 DB_GEN_C
-  t << "<computeroutput>";
+  t << "[source5]" << endl;
 }
 void AsciidocGenerator::endMemberDocPrefixItem()
 {
 DB_GEN_C
-  t << "</computeroutput>";
+  t << endl;
 }
 void AsciidocGenerator::exceptionEntry(const char* prefix,bool closeBracket)
 {
@@ -3132,12 +2935,13 @@ DB_GEN_C
 void AsciidocGenerator::startCodeFragment()
 {
 DB_GEN_C
-    t << "<programlisting>";
+  t << "[source9]" << endl;
+  t << "----" << endl;
 }
 void AsciidocGenerator::endCodeFragment()
 {
 DB_GEN_C
-    t << "</programlisting>";
+    t << "----" << endl;
 }
 void AsciidocGenerator::startMemberTemplateParams()
 {
@@ -3147,20 +2951,16 @@ DB_GEN_C
 void AsciidocGenerator::endMemberTemplateParams(const char *,const char *)
 {
 DB_GEN_C
-  t << "</para>";
-  t << "<para>";
+  t << endl;
 }
 void AsciidocGenerator::startSection(const char *lab,const char *,SectionInfo::SectionType type)
 {
 DB_GEN_C
-  t << "    <section xml:id=\"_" << stripPath(lab) << "\">";
-  t << "<title>";
+  t << "14[[_" << stripPath(lab) << "]] ";
 }
 void AsciidocGenerator::endSection(const char *lab,SectionInfo::SectionType)
 {
 DB_GEN_C
-  t << "</title>";
-  t << "    </section>";
 }
 void AsciidocGenerator::addIndexItem(const char *prim,const char *sec)
 {
@@ -3172,37 +2972,33 @@ void AsciidocGenerator::startDescTable(const char *title)
 {
 DB_GEN_C
   int ncols = 2;
-  t << "<informaltable frame=\"all\">" << endl;
-  if (title)t << "<title>" << convertToAsciidoc(title) << "</title>" << endl;
-  t << "    <tgroup cols=\"" << ncols << "\" align=\"left\" colsep=\"1\" rowsep=\"1\">" << endl;
+  t << "[cols=\"";
   for (int i = 0; i < ncols; i++)
   {
-    t << "      <colspec colname='c" << i+1 << "'/>\n";
+    t << "<colspec colname='c" << i+1 << "'/>\n";
   }
-  t << "<tbody>\n";
+  t << "\"]" << endl;
+  //if (title)t << "=== " << convertToAsciidoc(title) << endl;
+  t << "|===6" << endl;
   m_descTable = TRUE;
 }
 
 void AsciidocGenerator::endDescTable()
 {
 DB_GEN_C
-  t << "    </tbody>" << endl;
-  t << "    </tgroup>" << endl;
-  t << "</informaltable>" << endl;
+  t << "|===7" << endl;
   m_descTable = FALSE;
 }
 
 void AsciidocGenerator::startDescTableRow()
 {
 DB_GEN_C
-  t << "<row>";
-  t << "<entry>";
+  t << "|";
 }
 
 void AsciidocGenerator::endDescTableRow()
 {
 DB_GEN_C
-  t << "</row>";
 }
 
 void AsciidocGenerator::startDescTableTitle()
@@ -3213,6 +3009,7 @@ DB_GEN_C
 void AsciidocGenerator::endDescTableTitle()
 {
 DB_GEN_C
+  t << endl;
 }
 
 void AsciidocGenerator::startDescTableData()
@@ -3283,14 +3080,15 @@ DB_GEN_C
 void AsciidocGenerator::startConstraintList(const char *header)
 {
 DB_GEN_C
-  t << "<simplesect><title>";
+  t << "==== 54";
   docify(header);
-  t << "</title>" << endl;
+  t << endl;
+  t << endl;
 }
 void AsciidocGenerator::startConstraintParam()
 {
 DB_GEN_C
-  t << "<para><emphasis role=\"strong\">";
+  t << "NOTE: ";
 }
 void AsciidocGenerator::endConstraintParam()
 {
@@ -3304,7 +3102,7 @@ DB_GEN_C
 void AsciidocGenerator::endConstraintType()
 {
 DB_GEN_C
-  t << "</emphasis></para>" << endl;
+  t << "__" << endl;
 }
 void AsciidocGenerator::startConstraintDocs()
 {
@@ -3317,5 +3115,4 @@ DB_GEN_C
 void AsciidocGenerator::endConstraintList()
 {
 DB_GEN_C
-  t << "</simplesect>" << endl;
 }
