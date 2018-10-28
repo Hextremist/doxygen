@@ -315,6 +315,10 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type, bool 
 	  if (!Config_getBool(GENERATE_DOCBOOK)) return result;
 	  outputDir = Config_getString(DOCBOOK_OUTPUT);
 	  break;
+        case DocImage::Asciidoc:
+	  if (!Config_getBool(GENERATE_ASCIIDOC)) return result;
+	  outputDir = Config_getString(ASCIIDOC_OUTPUT);
+	  break;
         case DocImage::Rtf:
 	  if (!Config_getBool(GENERATE_RTF)) return result;
 	  outputDir = Config_getString(RTF_OUTPUT);
@@ -1483,6 +1487,15 @@ reparsetoken:
             tok = doctokenizerYYlex();
             children.append(new DocVerbatim(parent,g_context,g_token->verb,DocVerbatim::DocbookOnly,g_isExample,g_exampleName));
             if (tok==0) warn_doc_error(g_fileName,doctokenizerYYlineno,"docbookonly section ended without end marker",doctokenizerYYlineno);
+            doctokenizerYYsetStatePara();
+          }
+          break;
+        case CMD_ADONLY:
+          {
+            doctokenizerYYsetStateDbOnly();
+            tok = doctokenizerYYlex();
+            children.append(new DocVerbatim(parent,g_context,g_token->verb,DocVerbatim::AsciidocOnly,g_isExample,g_exampleName));
+            if (tok==0) warn_doc_error(g_fileName,doctokenizerYYlineno,"asciidoc section ended without end marker",doctokenizerYYlineno);
             doctokenizerYYsetStatePara();
           }
           break;
@@ -5045,10 +5058,11 @@ void DocPara::handleImage(const QCString &cmdName)
   }
   DocImage::Type t;
   QCString imgType = g_token->name.lower();
-  if      (imgType=="html")    t=DocImage::Html;
-  else if (imgType=="latex")   t=DocImage::Latex;
-  else if (imgType=="docbook") t=DocImage::DocBook;
-  else if (imgType=="rtf")     t=DocImage::Rtf;
+  if      (imgType=="html")     t=DocImage::Html;
+  else if (imgType=="latex")    t=DocImage::Latex;
+  else if (imgType=="docbook")  t=DocImage::DocBook;
+  else if (imgType=="asciidoc") t=DocImage::Asciidoc;
+  else if (imgType=="rtf")      t=DocImage::Rtf;
   else
   {
     warn_doc_error(g_fileName,doctokenizerYYlineno,"output format %s specified as the first argument of "
@@ -5597,6 +5611,15 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
         doctokenizerYYsetStatePara();
       }
       break;
+    case CMD_ADONLY:
+      {
+        doctokenizerYYsetStateDbOnly();
+        retval = doctokenizerYYlex();
+        m_children.append(new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::AsciidocOnly,g_isExample,g_exampleName));
+        if (retval==0) warn_doc_error(g_fileName,doctokenizerYYlineno,"asiidoconly section ended without end marker",doctokenizerYYlineno);
+        doctokenizerYYsetStatePara();
+      }
+      break;
     case CMD_VERBATIM:
       {
         doctokenizerYYsetStateVerbatim();
@@ -5677,6 +5700,7 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
     case CMD_ENDLATEXONLY:
     case CMD_ENDXMLONLY:
     case CMD_ENDDBONLY:
+    case CMD_ENDADONLY:
     case CMD_ENDLINK:
     case CMD_ENDVERBATIM:
     case CMD_ENDDOT:

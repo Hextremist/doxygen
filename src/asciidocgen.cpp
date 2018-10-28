@@ -58,15 +58,15 @@
 //#define Asciidoc_DB(x) QCString __t;__t.sprintf x;m_t << __t
 
 #if 0
-#define DB_GEN_C DB_GEN_C1(t)
-#define DB_GEN_C1(x) x << "<!-- DB_GEN_C " << __LINE__ << " -->\n";
-#define DB_GEN_C2(y) DB_GEN_C2a(t,y)
-#define DB_GEN_C2a(x,y) x << "<!-- DB_GEN_C " << __LINE__ << " " << y << " -->\n";
+#define AD_GEN_C AD_GEN_C1(t)
+#define AD_GEN_C1(x) x << "# AD_GEN_C " << __LINE__ << "\n";
+#define AD_GEN_C2(y) AD_GEN_C2a(t,y)
+#define AD_GEN_C2a(x,y) x << "# AD_GEN_C " << __LINE__ << " " << y << "\n";
 #else
-#define DB_GEN_C
-#define DB_GEN_C1(x)
-#define DB_GEN_C2(y)
-#define DB_GEN_C2a(x,y)
+#define AD_GEN_C
+#define AD_GEN_C1(x)
+#define AD_GEN_C2(y)
+#define AD_GEN_C2a(x,y)
 #endif
 //------------------
 
@@ -148,7 +148,7 @@ static void addIndexTerm(FTextStream &t, QCString prim, QCString sec = "")
 void writeAsciidocLink(FTextStream &t,const char * /*extRef*/,const char *compoundId,
     const char *anchorId,const char * text,const char * /*tooltip*/)
 {
-  t << "<<1" << stripPath(compoundId);
+  t << "<<" << stripPath(compoundId);
   if (anchorId) t << "_1" << anchorId;
   t << ",";
   writeAsciidocString(t,text);
@@ -289,7 +289,7 @@ void AsciidocCodeGenerator::finish()
 }
 void AsciidocCodeGenerator::startCodeFragment()
 {
-  m_t << "[source1]" << endl;
+  m_t << "[source]" << endl;
   m_t << "----" << endl;
 }
 void AsciidocCodeGenerator::endCodeFragment()
@@ -324,7 +324,7 @@ void writeAsciidocCodeBlock(FTextStream &t,FileDef *fd)
 
 AsciidocGenerator::AsciidocGenerator() : OutputGenerator()
 {
-DB_GEN_C
+AD_GEN_C
   dir=Config_getString(ASCIIDOC_OUTPUT);
   //insideTabbing=FALSE;
   //firstDescItem=TRUE;
@@ -345,7 +345,7 @@ DB_GEN_C
 
 AsciidocGenerator::~AsciidocGenerator()
 {
-DB_GEN_C
+AD_GEN_C
 }
 
 void AsciidocGenerator::init()
@@ -363,7 +363,7 @@ void AsciidocGenerator::init()
 
 void AsciidocGenerator::startFile(const char *name,const char *,const char *)
 {
-DB_GEN_C
+AD_GEN_C
   QCString fileName=name;
   QCString pageName;
   QCString fileType="section";
@@ -385,43 +385,25 @@ DB_GEN_C
   m_codeGen.setRelativePath(relPath);
   m_codeGen.setSourceFileName(stripPath(fileName));
 
-  if (!pageName.isEmpty()) t << "12[[_" <<  stripPath(pageName) << "]]" << endl;
+  if (!pageName.isEmpty()) t << "[[_" <<  stripPath(pageName) << "]]" << endl;
 }
 
 void AsciidocGenerator::endFile()
 {
-DB_GEN_C
-  m_inDetail = FALSE;
-  while (m_inLevel != -1)
-  {
-    m_inLevel--;
-  }
-  m_inGroup = FALSE;
-
-  QCString fileType="section";
-  QCString fileName= m_codeGen.sourceFileName();
-  if (fileName == "index.xml")
-  {
-    fileType="book";
-  }
-  else if (fileName == "mainpage.xml")
-  {
-    fileType="chapter";
-  }
+AD_GEN_C
   endPlainFile();
-  m_codeGen.setSourceFileName("");
 }
 
 void AsciidocGenerator::startIndexSection(IndexSections is)
 {
-DB_GEN_C2("IndexSections " << is)
+AD_GEN_C2("IndexSections " << is)
   switch (is)
   {
     case isTitlePageStart:
       {
         QCString dbk_projectName = Config_getString(PROJECT_NAME);
         t << "<info>" << endl;
-        t << "== 37" << convertToAsciidoc(dbk_projectName) << endl;
+        t << "== " << convertToAsciidoc(dbk_projectName) << endl;
 	t << endl;
         t << "    </info>" << endl;
       }
@@ -429,7 +411,7 @@ DB_GEN_C2("IndexSections " << is)
     case isTitlePageAuthor:
       break;
     case isMainPage:
-      t << "== 38";
+      t << "== ";
       break;
     case isModuleIndex:
       //Module Index}\n"
@@ -453,22 +435,22 @@ DB_GEN_C2("IndexSections " << is)
       //Annotated Page Index}\n"
       break;
     case isModuleDocumentation:
-      t << "== 39";
+      t << "== ";
       break;
     case isDirDocumentation:
-      t << "== 40";
+      t << "== ";
       break;
     case isNamespaceDocumentation:
-      t << "== 41";
+      t << "== ";
       break;
     case isClassDocumentation:
-      t << "== 42";
+      t << "== ";
       break;
     case isFileDocumentation:
-      t << "== 43";
+      t << "== ";
       break;
     case isExampleDocumentation:
-      t << "== 44";
+      t << "== ";
       break;
     case isPageDocumentation:
       break;
@@ -481,7 +463,7 @@ DB_GEN_C2("IndexSections " << is)
 
 void AsciidocGenerator::endIndexSection(IndexSections is)
 {
-DB_GEN_C2("IndexSections " << is)
+AD_GEN_C2("IndexSections " << is)
   static bool sourceBrowser = Config_getBool(SOURCE_BROWSER);
   switch (is)
   {
@@ -677,7 +659,7 @@ DB_GEN_C2("IndexSections " << is)
 }
 void AsciidocGenerator::writePageLink(const char *name, bool /*first*/)
 {
-DB_GEN_C
+AD_GEN_C
   PageSDict::Iterator pdi(*Doxygen::pageSDict);
   PageDef *pd = pdi.toFirst();
   for (pd = pdi.toFirst();(pd=pdi.current());++pdi)
@@ -686,11 +668,11 @@ DB_GEN_C
     {
       if (!pd->title().isEmpty())
       {
-        t << "== 45" << convertToAsciidoc(pd->title()) << endl;
+        t << "== " << convertToAsciidoc(pd->title()) << endl;
       }
       else
       {
-        t << "== 46" << convertToAsciidoc(pd->name()) << endl;
+        t << "== " << convertToAsciidoc(pd->name()) << endl;
       }
       t << endl;
       t << "<xi:include href=\"" << pd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
@@ -699,7 +681,7 @@ DB_GEN_C
 }
 void AsciidocGenerator::writeDoc(DocNode *n,Definition *ctx,MemberDef *)
 {
-DB_GEN_C
+AD_GEN_C
   AsciidocDocVisitor *visitor =
     new AsciidocDocVisitor(t,*this);
   n->accept(visitor);
@@ -708,45 +690,43 @@ DB_GEN_C
 
 void AsciidocGenerator::startParagraph(const char *)
 {
-DB_GEN_C
-  t << endl;
+AD_GEN_C
 }
 
 void AsciidocGenerator::endParagraph()
 {
-DB_GEN_C
+AD_GEN_C
   t << endl;
 }
 void AsciidocGenerator::writeString(const char *text)
 {
-DB_GEN_C
+AD_GEN_C
   t << text;
 }
 void AsciidocGenerator::startMemberHeader(const char *name,int)
 {
-DB_GEN_C
-  t << "=== 48";
+AD_GEN_C
+  t << "=== ";
   m_inSimpleSect[m_levelListItem] = TRUE;
 }
 
 void AsciidocGenerator::endMemberHeader()
 {
-DB_GEN_C
-  t << endl;
+AD_GEN_C
   t << endl;
 }
 void AsciidocGenerator::docify(const char *str)
 {
-DB_GEN_C
+AD_GEN_C
   t << convertToAsciidoc(str);
 }
 void AsciidocGenerator::writeObjectLink(const char *ref, const char *f,
 					const char *anchor, const char *text)
 {
-DB_GEN_C
+AD_GEN_C
   if (anchor)
   {
-    t << "<<2_" << anchor;
+    t << "<<_" << anchor;
     if (f) t << stripPath(f) << "_1";
   }
   else
@@ -757,12 +737,12 @@ DB_GEN_C
 }
 void AsciidocGenerator::startMemberList()
 {
-DB_GEN_C
+AD_GEN_C
   m_levelListItem++;
 }
 void AsciidocGenerator::endMemberList()
 {
-DB_GEN_C
+AD_GEN_C
   m_inListItem[m_levelListItem] = FALSE;
   m_levelListItem = (m_levelListItem> 0 ?  m_levelListItem - 1 : 0);
   m_inSimpleSect[m_levelListItem] = FALSE;
@@ -770,82 +750,83 @@ DB_GEN_C
 }
 void AsciidocGenerator::startMemberItem(const char *,int,const char *)
 {
-DB_GEN_C
+AD_GEN_C
   if (m_inListItem[m_levelListItem]) t << endl;
   m_inListItem[m_levelListItem] = TRUE;
 }
 void AsciidocGenerator::endMemberItem()
 {
-DB_GEN_C
+AD_GEN_C
   t << endl;
 }
 void AsciidocGenerator::startBold(void)
 {
-DB_GEN_C
+AD_GEN_C
   t << "**";
 }
 void AsciidocGenerator::endBold(void)
 {
-DB_GEN_C
+AD_GEN_C
   t << "**";
 }
 void AsciidocGenerator::startGroupHeader(int extraIndentLevel)
 {
-DB_GEN_C2("m_inLevel " << m_inLevel)
-DB_GEN_C2("extraIndentLevel " << extraIndentLevel)
+AD_GEN_C2("m_inLevel " << m_inLevel)
+AD_GEN_C2("extraIndentLevel " << extraIndentLevel)
   m_firstMember = TRUE; 
   m_inSimpleSect[m_levelListItem] = FALSE;
   if (m_inLevel != -1) m_inGroup = TRUE;
   m_inLevel = extraIndentLevel;
-  t << "=== 49";
+  t << "=== ";
 }
 void AsciidocGenerator::writeRuler(void)
 {
-DB_GEN_C2("m_inLevel " << m_inLevel)
-DB_GEN_C2("m_inGroup " << m_inGroup)
+AD_GEN_C2("m_inLevel " << m_inLevel)
+AD_GEN_C2("m_inGroup " << m_inGroup)
   if (m_inGroup) t << endl;
   m_inGroup = FALSE;
 }
 
 void AsciidocGenerator::endGroupHeader(int)
 {
-DB_GEN_C
+AD_GEN_C
   t << endl;
   t << endl;
 }
 
 void AsciidocGenerator::startParameterList(bool openBracket)
 {
-DB_GEN_C
+AD_GEN_C
   if (openBracket) t << "(";
 }
 void AsciidocGenerator::endParameterList()
 {
-DB_GEN_C
+AD_GEN_C
+  t << "``";
 }
 void AsciidocGenerator::writeNonBreakableSpace(int n)
 {
-DB_GEN_C
-  for (int i=0;i<n;i++) t << " ";
+AD_GEN_C
+  for (int i=0;i<n;i++) t << "{nbsp}";
 }
 void AsciidocGenerator::lineBreak(const char *)
 {
-DB_GEN_C
+AD_GEN_C
   t << endl;
 }
 void AsciidocGenerator::startTypewriter()
 {
-DB_GEN_C
+AD_GEN_C
   if (!m_denseText) t << "``";
 }
 void AsciidocGenerator::endTypewriter()
 {
-DB_GEN_C
+AD_GEN_C
   if (!m_denseText) t << "``" << endl;
 }
 void AsciidocGenerator::startTextBlock(bool dense)
 {
-DB_GEN_C
+AD_GEN_C
   if (dense)
   {
     m_denseText = TRUE;
@@ -854,7 +835,7 @@ DB_GEN_C
 }
 void AsciidocGenerator::endTextBlock(bool dense)
 {
-DB_GEN_C
+AD_GEN_C
   if (m_denseText)
   {
     m_denseText = FALSE;
@@ -864,11 +845,11 @@ DB_GEN_C
 void AsciidocGenerator::startMemberDoc(const char *clname, const char *memname, const char *anchor, const char *title,
                                       int memCount, int memTotal, bool showInline)
 {
-DB_GEN_C2("m_inLevel " << m_inLevel)
-  t << "==== 50" << convertToAsciidoc(title) << endl;
+AD_GEN_C2("m_inLevel " << m_inLevel)
+  t << "==== " << convertToAsciidoc(title) << endl;
   if (memTotal>1)
   {
-    t << "[source2]" << endl;
+    t << "[source]" << endl;
     t << "----" << endl;
     t << memCount << "/" << memTotal << "]";
     t << "----" << endl;
@@ -882,17 +863,17 @@ DB_GEN_C2("m_inLevel " << m_inLevel)
 }
 void AsciidocGenerator::endMemberDoc(bool)
 {
-DB_GEN_C
+AD_GEN_C
   t << endl;
 }
 void AsciidocGenerator::startTitleHead(const char *)
 {
-DB_GEN_C
-  t << "== 51";
+AD_GEN_C
+  t << "== ";
 }
 void AsciidocGenerator::endTitleHead(const char *fileName,const char *name)
 {
-DB_GEN_C
+AD_GEN_C
   t << endl;
   if (name) addIndexTerm(t, name);
 }
@@ -900,56 +881,59 @@ void AsciidocGenerator::startDoxyAnchor(const char *fName,const char *manName,
                                  const char *anchor,const char *name,
                                  const char *args)
 {
-DB_GEN_C
+AD_GEN_C
   if (!m_inListItem[m_levelListItem] && !m_descTable)
   {
     m_firstMember = FALSE;
   }
   if (anchor)
   {
-      t << "13[[_" << stripPath(fName) << "_1" << anchor << "]]" << endl;
+      t << "[[_" << stripPath(fName) << "_1" << anchor << "]]" << endl;
   }
 }
 void AsciidocGenerator::endDoxyAnchor(const char *fileName,const char *anchor)
 {
-DB_GEN_C
+AD_GEN_C
 }
 void AsciidocGenerator::startMemberDocName(bool)
 {
-DB_GEN_C
-  t << "[source3]" << endl;
-  t << "----" << endl;
+AD_GEN_C
+  t << "``";
 }
 void AsciidocGenerator::endMemberDocName()
 {
-DB_GEN_C
-  t << "----" << endl;
+AD_GEN_C
 }
 void AsciidocGenerator::startMemberGroupHeader(bool hasHeader)
 {
-DB_GEN_C
+AD_GEN_C
 }
 void AsciidocGenerator::endMemberGroupHeader()
 {
-DB_GEN_C
+AD_GEN_C
 }
 void AsciidocGenerator::startMemberGroup()
 {
-DB_GEN_C
+AD_GEN_C
+    t << "STARTMEMBER\n";
 }
 void AsciidocGenerator::endMemberGroup(bool)
 {
-DB_GEN_C
-  t << "</simplesect>" << endl;
+AD_GEN_C
+  t << "ENDMEMBER";
+  t << endl;
+  t << endl;
 }
 void AsciidocGenerator::startClassDiagram()
 {
-DB_GEN_C
+AD_GEN_C
+  t << "STARTCLASSDIAGRAM" << endl;
 }
 
 void AsciidocGenerator::endClassDiagram(const ClassDiagram &d, const char *fileName,const char *)
 {
-DB_GEN_C
+AD_GEN_C
+    t << "ENDCLASSDIAGRAM\n";
   visitADPreStart(t, FALSE, relPath + fileName + ".png", NULL, NULL);
   d.writeImage(t,dir,relPath,fileName,FALSE);
   visitADPostEnd(t, FALSE);
@@ -958,48 +942,46 @@ DB_GEN_C
 }
 void  AsciidocGenerator::startLabels()
 {
-DB_GEN_C
+AD_GEN_C
 }
 
 void  AsciidocGenerator::writeLabel(const char *l,bool isLast)
 {
-DB_GEN_C
-  t << "[source4]" << endl;
-  t << "----" << endl;
-  t << l << "]" << endl;
+AD_GEN_C
+  t << " [.small]#" << l << "#";
   if (!isLast) t << ", ";
 }
 
 void  AsciidocGenerator::endLabels()
 {
-DB_GEN_C
-  t << "----" << endl;
+AD_GEN_C
+  t << endl;
 }
 void AsciidocGenerator::startExamples()
 {
-DB_GEN_C
-  t << "=== 52";
+AD_GEN_C
+  t << "=== ";
   docify(theTranslator->trExamples());
 }
 
 void AsciidocGenerator::endExamples()
 {
-DB_GEN_C
+AD_GEN_C
   t << endl;
 }
 void AsciidocGenerator::startSubsubsection(void)
 {
-DB_GEN_C
-  t << "=== 53";
+AD_GEN_C
+  t << "=== ";
 }
 void AsciidocGenerator::endSubsubsection(void)
 {
-DB_GEN_C
+AD_GEN_C
   t << endl;
 }
 void AsciidocGenerator::writeChar(char c)
 {
-DB_GEN_C
+AD_GEN_C
   char cs[2];
   cs[0]=c;
   cs[1]=0;
@@ -1007,17 +989,17 @@ DB_GEN_C
 }
 void AsciidocGenerator::startMemberDocPrefixItem()
 {
-DB_GEN_C
-  t << "[source5]" << endl;
+AD_GEN_C
+  t << "[source]" << endl;
 }
 void AsciidocGenerator::endMemberDocPrefixItem()
 {
-DB_GEN_C
+AD_GEN_C
   t << endl;
 }
 void AsciidocGenerator::exceptionEntry(const char* prefix,bool closeBracket)
 {
-DB_GEN_C
+AD_GEN_C
   if (prefix)
     t << " " << prefix << "(";
   else if (closeBracket)
@@ -1026,12 +1008,12 @@ DB_GEN_C
 }
 void AsciidocGenerator::startParameterName(bool)
 {
-DB_GEN_C
+AD_GEN_C
   t << " ";
 }
 void AsciidocGenerator::endParameterName(bool last,bool /*emptyList*/,bool closeBracket)
 {
-DB_GEN_C
+AD_GEN_C
   if (last)
   {
     if (closeBracket) t << ")";
@@ -1039,43 +1021,43 @@ DB_GEN_C
 }
 void AsciidocGenerator::startCodeFragment()
 {
-DB_GEN_C
-  t << "[source9]" << endl;
+AD_GEN_C
+  t << "[source]" << endl;
   t << "----" << endl;
 }
 void AsciidocGenerator::endCodeFragment()
 {
-DB_GEN_C
+AD_GEN_C
     t << "----" << endl;
 }
 void AsciidocGenerator::startMemberTemplateParams()
 {
-DB_GEN_C
+AD_GEN_C
 }
 
 void AsciidocGenerator::endMemberTemplateParams(const char *,const char *)
 {
-DB_GEN_C
+AD_GEN_C
   t << endl;
 }
 void AsciidocGenerator::startSection(const char *lab,const char *,SectionInfo::SectionType type)
 {
-DB_GEN_C
-  t << "14[[_" << stripPath(lab) << "]] ";
+AD_GEN_C
+  t << "[[_" << stripPath(lab) << "]] ";
 }
 void AsciidocGenerator::endSection(const char *lab,SectionInfo::SectionType)
 {
-DB_GEN_C
+AD_GEN_C
 }
 void AsciidocGenerator::addIndexItem(const char *prim,const char *sec)
 {
-DB_GEN_C
+AD_GEN_C
   addIndexTerm(t, prim, sec);
 }
 
 void AsciidocGenerator::startDescTable(const char *title)
 {
-DB_GEN_C
+AD_GEN_C
   int ncols = 2;
   t << "[cols=\"";
   for (int i = 0; i < ncols; i++)
@@ -1084,140 +1066,150 @@ DB_GEN_C
   }
   t << "\"]" << endl;
   //if (title)t << "=== " << convertToAsciidoc(title) << endl;
-  t << "|===6" << endl;
+  t << "|===" << endl;
   m_descTable = TRUE;
 }
 
 void AsciidocGenerator::endDescTable()
 {
-DB_GEN_C
-  t << "|===7" << endl;
+AD_GEN_C
+  t << "|===" << endl;
   m_descTable = FALSE;
 }
 
 void AsciidocGenerator::startDescTableRow()
 {
-DB_GEN_C
+AD_GEN_C
   t << "|";
 }
 
 void AsciidocGenerator::endDescTableRow()
 {
-DB_GEN_C
+AD_GEN_C
 }
 
 void AsciidocGenerator::startDescTableTitle()
 {
-DB_GEN_C
+AD_GEN_C
 }
 
 void AsciidocGenerator::endDescTableTitle()
 {
-DB_GEN_C
+AD_GEN_C
   t << endl;
 }
 
 void AsciidocGenerator::startDescTableData()
 {
-DB_GEN_C
+AD_GEN_C
   t << "</entry><entry>";
 }
 
 void AsciidocGenerator::endDescTableData()
 {
-DB_GEN_C
+AD_GEN_C
   t << "</entry>";
 }
 void AsciidocGenerator::startGroupCollaboration()
 {
-DB_GEN_C
+AD_GEN_C
 }
 void AsciidocGenerator::endGroupCollaboration(const DotGroupCollaboration &g)
 {
-DB_GEN_C
+AD_GEN_C
+  t << endl;
   g.writeGraph(t,GOF_BITMAP,EOF_Asciidoc,Config_getString(ASCIIDOC_OUTPUT),fileName,relPath,FALSE);
+  t << endl;
 }
 void AsciidocGenerator::startDotGraph()
 {
-DB_GEN_C
+AD_GEN_C
 }
 void AsciidocGenerator::endDotGraph(const DotClassGraph &g)
 {
-DB_GEN_C
+AD_GEN_C
+  t << endl;
   g.writeGraph(t,GOF_BITMAP,EOF_Asciidoc,Config_getString(ASCIIDOC_OUTPUT),fileName,relPath,TRUE,FALSE);
+  t << endl;
 }
 void AsciidocGenerator::startInclDepGraph()
 {
-DB_GEN_C
+AD_GEN_C
 }
 void AsciidocGenerator::endInclDepGraph(const DotInclDepGraph &g)
 {
-DB_GEN_C
-  QCString fn = g.writeGraph(t,GOF_BITMAP,EOF_Asciidoc,Config_getString(ASCIIDOC_OUTPUT), fileName,relPath,FALSE);
+AD_GEN_C
+  t << endl;
+  g.writeGraph(t,GOF_BITMAP,EOF_Asciidoc,Config_getString(ASCIIDOC_OUTPUT), fileName,relPath,FALSE);
+  t << endl;
 }
 void AsciidocGenerator::startCallGraph()
 {
-DB_GEN_C
+AD_GEN_C
 }
 void AsciidocGenerator::endCallGraph(const DotCallGraph &g)
 {
-DB_GEN_C
-  QCString fn = g.writeGraph(t,GOF_BITMAP,EOF_Asciidoc,Config_getString(ASCIIDOC_OUTPUT), fileName,relPath,FALSE);
+AD_GEN_C
+  t << endl;
+  g.writeGraph(t,GOF_BITMAP,EOF_Asciidoc,Config_getString(ASCIIDOC_OUTPUT), fileName,relPath,FALSE);
+  t << endl;
 }
 void AsciidocGenerator::startDirDepGraph()
 {
-DB_GEN_C
+AD_GEN_C
 }
 void AsciidocGenerator::endDirDepGraph(const DotDirDeps &g)
 {
-DB_GEN_C
-  QCString fn = g.writeGraph(t,GOF_BITMAP,EOF_Asciidoc,Config_getString(ASCIIDOC_OUTPUT), fileName,relPath,FALSE);
+AD_GEN_C
+  t << endl;
+  g.writeGraph(t,GOF_BITMAP,EOF_Asciidoc,Config_getString(ASCIIDOC_OUTPUT), fileName,relPath,FALSE);
+  t << endl;
 }
 void AsciidocGenerator::startMemberDocList()
 {
-DB_GEN_C
+AD_GEN_C
 }
 void AsciidocGenerator::endMemberDocList()
 {
-DB_GEN_C
+AD_GEN_C
   m_inGroup = TRUE;
 }
 void AsciidocGenerator::startConstraintList(const char *header)
 {
-DB_GEN_C
-  t << "==== 54";
+AD_GEN_C
+  t << "==== ";
   docify(header);
   t << endl;
   t << endl;
 }
 void AsciidocGenerator::startConstraintParam()
 {
-DB_GEN_C
+AD_GEN_C
   t << "NOTE: ";
 }
 void AsciidocGenerator::endConstraintParam()
 {
-DB_GEN_C
+AD_GEN_C
 }
 void AsciidocGenerator::startConstraintType()
 {
-DB_GEN_C
+AD_GEN_C
   t << ":";
 }
 void AsciidocGenerator::endConstraintType()
 {
-DB_GEN_C
+AD_GEN_C
   t << "__" << endl;
 }
 void AsciidocGenerator::startConstraintDocs()
 {
-DB_GEN_C
+AD_GEN_C
 }
 void AsciidocGenerator::endConstraintDocs()
 {
-DB_GEN_C
+AD_GEN_C
 }
 void AsciidocGenerator::endConstraintList()
 {
-DB_GEN_C
+AD_GEN_C
 }

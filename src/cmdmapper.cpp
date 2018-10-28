@@ -141,6 +141,8 @@ CommandMap cmdMap[] =
   { "vhdlflow",      CMD_VHDLFLOW },
   { "docbookonly",   CMD_DBONLY },
   { "enddocbookonly",CMD_ENDDBONLY },
+  { "asciidoconly",  CMD_ADONLY },
+  { "endasciidoconly",CMD_ADONLY },
   { "endinternal",   CMD_ENDINTERNAL },
   { "parblock",      CMD_PARBLOCK },
   { "endparblock",   CMD_ENDPARBLOCK },

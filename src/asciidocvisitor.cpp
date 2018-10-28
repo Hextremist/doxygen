@@ -37,16 +37,17 @@
 #include "plantuml.h"
 
 #if 0
-#define DB_VIS_C DB_VIS_C1(m_t)
-#define DB_VIS_C1(x) x << "<!-- DB_VIS_C " << __LINE__ << " -->\n";
-#define DB_VIS_C2(y) DB_VIS_C2a(m_t,y)
-#define DB_VIS_C2a(x,y) x << "<!-- DB_VIS_C " << __LINE__ << " " << y << " -->\n";
+#define AD_VIS_C AD_VIS_C1(m_t)
+#define AD_VIS_C1(x) x << "# AD_VIS_C " << __LINE__ << "\n";
+#define AD_VIS_C2(y) AD_VIS_C2a(m_t,y)
+#define AD_VIS_C2a(x,y) x << "# AD_VIS_C " << __LINE__ << " " << y << "\n";
 #else
-#define DB_VIS_C
-#define DB_VIS_C1(x)
-#define DB_VIS_C2(y)
-#define DB_VIS_C2a(x,y)
+#define AD_VIS_C
+#define AD_VIS_C1(x)
+#define AD_VIS_C2(y)
+#define AD_VIS_C2a(x,y)
 #endif
+
 void visitADPreStart(FTextStream &t, const bool hasCaption, QCString name,  QCString width,  QCString height)
 {
   QCString tmpStr;
@@ -110,13 +111,12 @@ static void visitCaption(AsciidocDocVisitor *parent, QList<DocNode> children)
 AsciidocDocVisitor::AsciidocDocVisitor(FTextStream &t,CodeOutputInterface &ci)
   : DocVisitor(DocVisitor_Asciidoc), m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE)
 {
-DB_VIS_C
-  // m_t << "<section>" << endl;
+AD_VIS_C
 }
 AsciidocDocVisitor::~AsciidocDocVisitor()
 {
-DB_VIS_C
-  // m_t << "</section>" << endl;
+AD_VIS_C
+  m_t << endl;
 }
 
 //--------------------------------------
@@ -125,14 +125,14 @@ DB_VIS_C
 
 void AsciidocDocVisitor::visit(DocWord *w)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   filter(w->word());
 }
 
 void AsciidocDocVisitor::visit(DocLinkedWord *w)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   startLink(w->file(),w->anchor());
   filter(w->word());
@@ -141,7 +141,7 @@ DB_VIS_C
 
 void AsciidocDocVisitor::visit(DocWhiteSpace *w)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   if (m_insidePre)
   {
@@ -155,7 +155,7 @@ DB_VIS_C
 
 void AsciidocDocVisitor::visit(DocSymbol *s)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   const char *res = HtmlEntityMapper::instance()->asciidoc(s->symbol());
   if (res)
@@ -170,7 +170,7 @@ DB_VIS_C
 
 void AsciidocDocVisitor::visit(DocURL *u)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   if (u->isEmail()) m_t << "mailto:";
   filter(u->url());
@@ -178,23 +178,21 @@ DB_VIS_C
 
 void AsciidocDocVisitor::visit(DocLineBreak *)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
-  m_t << endl << "&#160;&#xa;" << endl;
-  // gives nicer results but gives problems as it is not allowed in <pare> and also problems with dblatex
-  // m_t << endl << "<sbr/>" << endl;
+  m_t << endl << " +" << endl;
 }
 
 void AsciidocDocVisitor::visit(DocHorRuler *)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   m_t << "'''" << endl;
 }
 
 void AsciidocDocVisitor::visit(DocStyleChange *s)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   switch (s->style())
   {
@@ -205,7 +203,7 @@ DB_VIS_C
       if (s->enable()) m_t << "__";     else m_t << "__";
       break;
     case DocStyleChange::Code:
-      if (s->enable()) m_t << "[source6]" << endl; else m_t << endl;
+      if (s->enable()) m_t << "[source]" << endl; else m_t << endl;
       break;
     case DocStyleChange::Subscript:
       if (s->enable()) m_t << "~";    else m_t << "~";
@@ -214,8 +212,8 @@ DB_VIS_C
       if (s->enable()) m_t << "^";    else m_t << "^";
       break;
     case DocStyleChange::Center:
-      if (s->enable()) m_t << "|===1" << endl;
-      else m_t << "|===2" << endl;
+      if (s->enable()) m_t << "|===" << endl;
+      else m_t << "|===" << endl;
       break;
     case DocStyleChange::Preformatted:
       if (s->enable())
@@ -248,20 +246,20 @@ DB_VIS_C
 
 void AsciidocDocVisitor::visit(DocVerbatim *s)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   SrcLangExt langExt = getLanguageFromFileName(m_langExt);
   switch(s->type())
   {
     case DocVerbatim::Code: // fall though
-	m_t << "[source7]" << endl;
+	m_t << "[source]" << endl;
       Doxygen::parserManager->getParser(m_langExt)
         ->parseCode(m_ci,s->context(),s->text(),langExt,
             s->isExample(),s->exampleFile());
       m_t << endl;
       break;
     case DocVerbatim::Verbatim:
-      m_t << "[source8]" << endl;
+      m_t << "[source]" << endl;
       filter(s->text());
       m_t << endl;
       break;
@@ -344,14 +342,14 @@ DB_VIS_C
 
 void AsciidocDocVisitor::visit(DocAnchor *anc)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   m_t << "<anchor xml:id=\"_" <<  stripPath(anc->file()) << "_1" << anc->anchor() << "\"/>";
 }
 
 void AsciidocDocVisitor::visit(DocInclude *inc)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   SrcLangExt langExt = getLanguageFromFileName(inc->extension());
   switch(inc->type())
@@ -435,7 +433,7 @@ DB_VIS_C
 
 void AsciidocDocVisitor::visit(DocIncOperator *op)
 {
-DB_VIS_C
+AD_VIS_C
   if (op->isFirst())
   {
     if (!m_hide)
@@ -472,7 +470,7 @@ DB_VIS_C
 
 void AsciidocDocVisitor::visit(DocFormula *f)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
 
   if (f->isInline()) m_t  << "<inlinemediaobject>" << endl;
@@ -487,7 +485,7 @@ DB_VIS_C
 
 void AsciidocDocVisitor::visit(DocIndexEntry *ie)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   m_t << "<indexterm><primary>";
   filter(ie->entry());
@@ -496,13 +494,13 @@ DB_VIS_C
 
 void AsciidocDocVisitor::visit(DocSimpleSectSep *)
 {
-DB_VIS_C
+AD_VIS_C
   // m_t << "<simplesect/>";
 }
 
 void AsciidocDocVisitor::visit(DocCite *cite)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   if (!cite->file().isEmpty()) startLink(cite->file(),cite->anchor());
   filter(cite->text());
@@ -515,7 +513,7 @@ DB_VIS_C
 
 void AsciidocDocVisitor::visitPre(DocAutoList *l)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   if (l->isEnumList())
   {
@@ -529,14 +527,14 @@ DB_VIS_C
 
 void AsciidocDocVisitor::visitPost(DocAutoList *l)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   m_t << endl;
 }
 
 void AsciidocDocVisitor::visitPre(DocAutoListItem *i)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   DocAutoList* l = dynamic_cast<DocAutoList*>(l->parent());
   if (l && l->isEnumList())
@@ -551,111 +549,111 @@ DB_VIS_C
 
 void AsciidocDocVisitor::visitPost(DocAutoListItem *)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   m_t << endl;
 }
 
 void AsciidocDocVisitor::visitPre(DocPara *)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   m_t << endl;
 }
 
 void AsciidocDocVisitor::visitPost(DocPara *)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   m_t << endl;
 }
 
 void AsciidocDocVisitor::visitPre(DocRoot *)
 {
-DB_VIS_C
+AD_VIS_C
   //m_t << "<hr><h4><font color=\"red\">New parser:</font></h4>\n";
 }
 
 void AsciidocDocVisitor::visitPost(DocRoot *)
 {
-DB_VIS_C
+AD_VIS_C
   //m_t << "<hr><h4><font color=\"red\">Old parser:</font></h4>\n";
 }
 
 void AsciidocDocVisitor::visitPre(DocSimpleSect *s)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   switch(s->type())
   {
     case DocSimpleSect::See:
       if (m_insidePre) 
       {
-        m_t << "==== 56" << theTranslator->trSeeAlso() << ":" << endl;
+        m_t << "==== " << theTranslator->trSeeAlso() << ":" << endl;
       } 
       else 
       {
-        m_t << "==== 57" << convertToAsciidoc(theTranslator->trSeeAlso()) << ":" << endl;
+        m_t << "==== " << convertToAsciidoc(theTranslator->trSeeAlso()) << ":" << endl;
       }
       break;
     case DocSimpleSect::Return:
       if (m_insidePre) 
       {
-        m_t << "==== 58" << theTranslator->trReturns()<< ":" << endl;
+        m_t << "==== " << theTranslator->trReturns()<< ":" << endl;
       } 
       else 
       {
-        m_t << "==== 59" << convertToAsciidoc(theTranslator->trReturns()) << ":" << endl;
+        m_t << "==== " << convertToAsciidoc(theTranslator->trReturns()) << ":" << endl;
       }
       break;
     case DocSimpleSect::Author:
       if (m_insidePre) 
       {
-        m_t << "==== 60" << theTranslator->trAuthor(TRUE, TRUE) << ":" << endl;
+        m_t << "==== " << theTranslator->trAuthor(TRUE, TRUE) << ":" << endl;
       } 
       else 
       {
-        m_t << "==== 61" << convertToAsciidoc(theTranslator->trAuthor(TRUE, TRUE)) << ":" << endl;
+        m_t << "==== " << convertToAsciidoc(theTranslator->trAuthor(TRUE, TRUE)) << ":" << endl;
       }
       break;
     case DocSimpleSect::Authors:
       if (m_insidePre) 
       {
-        m_t << "==== 62" << theTranslator->trAuthor(TRUE, FALSE) << ":" << endl;
+        m_t << "==== " << theTranslator->trAuthor(TRUE, FALSE) << ":" << endl;
       } 
       else 
       {
-        m_t << "==== 63" << convertToAsciidoc(theTranslator->trAuthor(TRUE, FALSE)) << ":" << endl;
+        m_t << "==== " << convertToAsciidoc(theTranslator->trAuthor(TRUE, FALSE)) << ":" << endl;
       }
       break;
     case DocSimpleSect::Version:
       if (m_insidePre) 
       {
-        m_t << "==== 64" << theTranslator->trVersion() << ":" << endl;
+        m_t << "==== " << theTranslator->trVersion() << ":" << endl;
       } 
       else 
       {
-        m_t << "==== 65" << convertToAsciidoc(theTranslator->trVersion()) << ":" << endl;
+        m_t << "==== " << convertToAsciidoc(theTranslator->trVersion()) << ":" << endl;
       }
       break;
     case DocSimpleSect::Since:
       if (m_insidePre) 
       {
-        m_t << "==== 66" << theTranslator->trSince() << ":" << endl;
+        m_t << "==== " << theTranslator->trSince() << ":" << endl;
       } 
       else 
       {
-        m_t << "==== 67" << convertToAsciidoc(theTranslator->trSince()) << ":" << endl;
+        m_t << "==== " << convertToAsciidoc(theTranslator->trSince()) << ":" << endl;
       }
       break;
     case DocSimpleSect::Date:
       if (m_insidePre) 
       {
-        m_t << "==== 68" << theTranslator->trDate() << ":" << endl;
+        m_t << "==== " << theTranslator->trDate() << ":" << endl;
       } 
       else 
       {
-        m_t << "==== 69" << convertToAsciidoc(theTranslator->trDate()) << ":" << endl;
+        m_t << "==== " << convertToAsciidoc(theTranslator->trDate()) << ":" << endl;
       }
       break;
     case DocSimpleSect::Note:
@@ -670,51 +668,51 @@ DB_VIS_C
     case DocSimpleSect::Pre:
       if (m_insidePre) 
       {
-        m_t << "==== 70" << theTranslator->trPrecondition() << ":" << endl;
+        m_t << "==== " << theTranslator->trPrecondition() << ":" << endl;
       } 
       else 
       {
-        m_t << "==== 71" << convertToAsciidoc(theTranslator->trPrecondition()) << ":" << endl;
+        m_t << "==== " << convertToAsciidoc(theTranslator->trPrecondition()) << ":" << endl;
       }
       break;
     case DocSimpleSect::Post:
       if (m_insidePre) 
       {
-        m_t << "==== 72" << theTranslator->trPostcondition() << ":" << endl;
+        m_t << "==== " << theTranslator->trPostcondition() << ":" << endl;
       } 
       else 
       {
-        m_t << "==== 73" << convertToAsciidoc(theTranslator->trPostcondition()) << ":" << endl;
+        m_t << "==== " << convertToAsciidoc(theTranslator->trPostcondition()) << ":" << endl;
       }
       break;
     case DocSimpleSect::Copyright:
       if (m_insidePre) 
       {
-        m_t << "==== 74" << theTranslator->trCopyright() << ":" << endl;
+        m_t << "==== " << theTranslator->trCopyright() << ":" << endl;
       } 
       else 
       {
-        m_t << "==== 75" << convertToAsciidoc(theTranslator->trCopyright()) << ":" << endl;
+        m_t << "==== " << convertToAsciidoc(theTranslator->trCopyright()) << ":" << endl;
       }
       break;
     case DocSimpleSect::Invar:
       if (m_insidePre) 
       {
-        m_t << "==== 76" << theTranslator->trInvariant() << ":" << endl;
+        m_t << "==== " << theTranslator->trInvariant() << ":" << endl;
       } 
       else 
       {
-        m_t << "==== 77" << convertToAsciidoc(theTranslator->trInvariant()) << ":" << endl;
+        m_t << "==== " << convertToAsciidoc(theTranslator->trInvariant()) << ":" << endl;
       }
       break;
     case DocSimpleSect::Remark:
       if (m_insidePre) 
       {
-        m_t << "==== 78" << theTranslator->trRemarks() << ":" << endl;
+        m_t << "==== " << theTranslator->trRemarks() << ":" << endl;
       } 
       else 
       {
-        m_t << "==== 79" << convertToAsciidoc(theTranslator->trRemarks()) << ":" << endl;
+        m_t << "==== " << convertToAsciidoc(theTranslator->trRemarks()) << ":" << endl;
       }
       break;
     case DocSimpleSect::Attention:
@@ -730,16 +728,16 @@ DB_VIS_C
 
 void AsciidocDocVisitor::visitPost(DocSimpleSect *s)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   switch(s->type())
   {
     case DocSimpleSect::Rcs:
     case DocSimpleSect::Unknown:
-      m_t << endl;
+	m_t << endl;
       break;
     case DocSimpleSect::User:
-      m_t << endl;
+	m_t << endl;
       break;
     case DocSimpleSect::Note:
     case DocSimpleSect::Attention:
@@ -747,73 +745,73 @@ DB_VIS_C
       m_t << "====" << endl;
       m_t << endl;
     default:
-      m_t << endl;
+	m_t << endl;
       break;
   }
 }
 
 void AsciidocDocVisitor::visitPre(DocTitle *t)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
-  if (t->hasTitle()) m_t << "==== 82";
+  if (t->hasTitle()) m_t << "==== ";
 }
 
 void AsciidocDocVisitor::visitPost(DocTitle *t)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   m_t << endl;
 }
 
 void AsciidocDocVisitor::visitPre(DocSimpleList *)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
 }
 
 void AsciidocDocVisitor::visitPost(DocSimpleList *)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   m_t << endl;
 }
 
 void AsciidocDocVisitor::visitPre(DocSimpleListItem *)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   m_t << "*11 ";
 }
 
 void AsciidocDocVisitor::visitPost(DocSimpleListItem *)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   m_t << "\n";
 }
 
 void AsciidocDocVisitor::visitPre(DocSection *s)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   m_t << "<section xml:id=\"_" <<  stripPath(s->file());
   if (!s->anchor().isEmpty()) m_t << "_1" << s->anchor();
   m_t << "\">" << endl;
-  m_t << "=== 80";
+  m_t << "=== ";
   filter(s->title());
   m_t << endl;
 }
 
 void AsciidocDocVisitor::visitPost(DocSection *)
 {
-DB_VIS_C
+AD_VIS_C
   m_t << endl;
 }
 
 void AsciidocDocVisitor::visitPre(DocHtmlList *s)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   if (s->type()==DocHtmlList::Ordered)
     m_t << "<orderedlist>\n";
@@ -823,62 +821,62 @@ DB_VIS_C
 
 void AsciidocDocVisitor::visitPost(DocHtmlList *s)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   m_t << "\n";
 }
 
 void AsciidocDocVisitor::visitPre(DocHtmlListItem *)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   m_t << "*12 ";
 }
 
 void AsciidocDocVisitor::visitPost(DocHtmlListItem *)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   m_t << "\n";
 }
 
 void AsciidocDocVisitor::visitPre(DocHtmlDescList *)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   m_t << "<variablelist>\n";
 }
 
 void AsciidocDocVisitor::visitPost(DocHtmlDescList *)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   m_t << "\n";
 }
 
 void AsciidocDocVisitor::visitPre(DocHtmlDescTitle *)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
 }
 
 void AsciidocDocVisitor::visitPost(DocHtmlDescTitle *)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   m_t << "::\n";
 }
 
 void AsciidocDocVisitor::visitPre(DocHtmlDescData *)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   m_t << "*13 ";
 }
 
 void AsciidocDocVisitor::visitPost(DocHtmlDescData *)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   m_t << "\n";
 }
@@ -887,7 +885,7 @@ static int colCnt = 0;
 static bool bodySet = FALSE; // it is possible to have tables without a header
 void AsciidocDocVisitor::visitPre(DocHtmlTable *t)
 {
-DB_VIS_C
+AD_VIS_C
   bodySet = FALSE;
   if (m_hide) return;
   m_t << "<informaltable frame=\"all\">" << endl;
@@ -901,15 +899,15 @@ DB_VIS_C
 
 void AsciidocDocVisitor::visitPost(DocHtmlTable *)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
-m_t << "|===3" << endl;
+m_t << "|===" << endl;
   m_t << endl;
 }
 
 void AsciidocDocVisitor::visitPre(DocHtmlRow *tr)
 {
-DB_VIS_C
+AD_VIS_C
   colCnt = 0;
   if (m_hide) return;
 
@@ -952,7 +950,7 @@ DB_VIS_C
 
 void AsciidocDocVisitor::visitPost(DocHtmlRow *tr)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   m_t << "</row>\n";
   if (tr->isHeading())
@@ -964,7 +962,7 @@ DB_VIS_C
 
 void AsciidocDocVisitor::visitPre(DocHtmlCell *c)
 {
-DB_VIS_C
+AD_VIS_C
   colCnt++;
   if (m_hide) return;
   m_t << "<entry";
@@ -1034,70 +1032,70 @@ DB_VIS_C
 
 void AsciidocDocVisitor::visitPost(DocHtmlCell *c)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   m_t << "</entry>";
 }
 
 void AsciidocDocVisitor::visitPre(DocHtmlCaption *c)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
    m_t << "<caption>";
 }
 
 void AsciidocDocVisitor::visitPost(DocHtmlCaption *)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   m_t << "</caption>\n";
 }
 
 void AsciidocDocVisitor::visitPre(DocInternal *)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   // TODO: to be implemented
 }
 
 void AsciidocDocVisitor::visitPost(DocInternal *)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   // TODO: to be implemented
 }
 
 void AsciidocDocVisitor::visitPre(DocHRef *href)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   m_t << "link:++" << convertToAsciidoc(href->url());
 }
 
 void AsciidocDocVisitor::visitPost(DocHRef *)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   m_t << "++";
 }
 
 void AsciidocDocVisitor::visitPre(DocHtmlHeader *)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
-  m_t << "==== 81";
+  m_t << "==== ";
 }
 
 void AsciidocDocVisitor::visitPost(DocHtmlHeader *)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   m_t << endl;
 }
 
 void AsciidocDocVisitor::visitPre(DocImage *img)
 {
-DB_VIS_C
+AD_VIS_C
   if (img->type()==DocImage::Asciidoc)
   {
     if (m_hide) return;
@@ -1119,7 +1117,7 @@ DB_VIS_C
 
 void AsciidocDocVisitor::visitPost(DocImage *img)
 {
-DB_VIS_C
+AD_VIS_C
   if (img->type()==DocImage::Asciidoc)
   {
     if (m_hide) return;
@@ -1134,7 +1132,7 @@ DB_VIS_C
     QCString m_file;
     bool ambig;
     FileDef *fd=findFileDef(Doxygen::imageNameDict, baseName, ambig);
-    if (fd) 
+    if (fd)
     {
       m_file=fd->absFilePath();
     }
@@ -1160,62 +1158,62 @@ DB_VIS_C
 
 void AsciidocDocVisitor::visitPre(DocDotFile *df)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   startDotFile(df->file(),df->width(),df->height(),df->hasCaption());
 }
 
 void AsciidocDocVisitor::visitPost(DocDotFile *df)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   endDotFile(df->hasCaption());
 }
 
 void AsciidocDocVisitor::visitPre(DocMscFile *df)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   startMscFile(df->file(),df->width(),df->height(),df->hasCaption());
 }
 
 void AsciidocDocVisitor::visitPost(DocMscFile *df)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   endMscFile(df->hasCaption());
 }
 void AsciidocDocVisitor::visitPre(DocDiaFile *df)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   startDiaFile(df->file(),df->width(),df->height(),df->hasCaption());
 }
 
 void AsciidocDocVisitor::visitPost(DocDiaFile *df)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   endDiaFile(df->hasCaption());
 }
 
 void AsciidocDocVisitor::visitPre(DocLink *lnk)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   startLink(lnk->file(),lnk->anchor());
 }
 
 void AsciidocDocVisitor::visitPost(DocLink *)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   endLink();
 }
 
 void AsciidocDocVisitor::visitPre(DocRef *ref)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   if (ref->isSubPage())
   {
@@ -1231,14 +1229,14 @@ DB_VIS_C
 
 void AsciidocDocVisitor::visitPost(DocRef *ref)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   if (!ref->file().isEmpty()) endLink();
 }
 
 void AsciidocDocVisitor::visitPre(DocSecRefItem *ref)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   //m_t << "<tocentry xml:idref=\"_" <<  stripPath(ref->file()) << "_1" << ref->anchor() << "\">";
   m_t << "<tocentry>";
@@ -1246,31 +1244,30 @@ DB_VIS_C
 
 void AsciidocDocVisitor::visitPost(DocSecRefItem *)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   m_t << "</tocentry>" << endl;
 }
 
 void AsciidocDocVisitor::visitPre(DocSecRefList *)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   m_t << "<toc>" << endl;
 }
 
 void AsciidocDocVisitor::visitPost(DocSecRefList *)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   m_t << "</toc>" << endl;
 }
 
 void AsciidocDocVisitor::visitPre(DocParamSect *s)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
-  m_t <<  endl;
-  m_t << "==== 55";
+  m_t << "==== ";
   switch(s->type())
   {
     case DocParamSect::Param:         m_t << theTranslator->trParameters();         break;
@@ -1298,22 +1295,22 @@ DB_VIS_C
     if (i < ncols) m_t << ',';
   }
   m_t << "\"]" << endl;
-  m_t << "|===4" << endl;
+  m_t << "|===" << endl;
 }
 
 void AsciidocDocVisitor::visitPost(DocParamSect *)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
-  m_t << "|===5" << endl;
+  m_t << "|===" << endl;
   m_t << endl;
 }
 
 void AsciidocDocVisitor::visitPre(DocParamList *pl)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
-  m_t << "|1 " << endl;
+  m_t << "| " << endl;
 
   DocParamSect::Type parentType = DocParamSect::Unknown;
   DocParamSect *sect = 0;
@@ -1388,17 +1385,17 @@ DB_VIS_C
 
 void AsciidocDocVisitor::visitPost(DocParamList *)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   m_t << endl;
 }
 
 void AsciidocDocVisitor::visitPre(DocXRefItem *x)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   if (x->title().isEmpty()) return;
-  m_t << "15[[_";
+  m_t << "[[_";
   m_t << stripPath(x->file()) << "_1" << x->anchor();
   m_t << ",";
   filter(x->title());
@@ -1408,7 +1405,7 @@ DB_VIS_C
 
 void AsciidocDocVisitor::visitPost(DocXRefItem *x)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   if (x->title().isEmpty()) return;
   m_t << endl;
@@ -1417,14 +1414,14 @@ DB_VIS_C
 
 void AsciidocDocVisitor::visitPre(DocInternalRef *ref)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   startLink(ref->file(),ref->anchor());
 }
 
 void AsciidocDocVisitor::visitPost(DocInternalRef *)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   endLink();
   m_t << " ";
@@ -1432,7 +1429,7 @@ DB_VIS_C
 
 void AsciidocDocVisitor::visitPre(DocCopy *)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   // TODO: to be implemented
 }
@@ -1440,7 +1437,7 @@ DB_VIS_C
 
 void AsciidocDocVisitor::visitPost(DocCopy *)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   // TODO: to be implemented
 }
@@ -1448,21 +1445,22 @@ DB_VIS_C
 
 void AsciidocDocVisitor::visitPre(DocText *)
 {
-DB_VIS_C
+AD_VIS_C
   // TODO: to be implemented
 }
 
 
 void AsciidocDocVisitor::visitPost(DocText *)
 {
-DB_VIS_C
+AD_VIS_C
   // TODO: to be implemented
+  //m_t << txt->kind() << endl;
 }
 
 
 void AsciidocDocVisitor::visitPre(DocHtmlBlockQuote *)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   m_t << "[quote]" << endl;
   m_t << "____" << endl;
@@ -1470,45 +1468,45 @@ DB_VIS_C
 
 void AsciidocDocVisitor::visitPost(DocHtmlBlockQuote *)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   m_t << "____" << endl;
 }
 
 void AsciidocDocVisitor::visitPre(DocVhdlFlow *)
 {
-DB_VIS_C
+AD_VIS_C
   // TODO: to be implemented
 }
 
 
 void AsciidocDocVisitor::visitPost(DocVhdlFlow *)
 {
-DB_VIS_C
+AD_VIS_C
   // TODO: to be implemented
 }
 
 void AsciidocDocVisitor::visitPre(DocParBlock *)
 {
-DB_VIS_C
+AD_VIS_C
 }
 
 void AsciidocDocVisitor::visitPost(DocParBlock *)
 {
-DB_VIS_C
+AD_VIS_C
 }
 
 
 void AsciidocDocVisitor::filter(const char *str)
 {
-DB_VIS_C
+AD_VIS_C
   m_t << convertToAsciidoc(str);
 }
 
 void AsciidocDocVisitor::startLink(const QCString &file,const QCString &anchor)
 {
-DB_VIS_C
-    m_t << "<<3_" << stripPath(file);
+AD_VIS_C
+    m_t << "<<_" << stripPath(file);
   if (!anchor.isEmpty())
   {
     if (file) m_t << "_1";
@@ -1519,19 +1517,19 @@ DB_VIS_C
 
 void AsciidocDocVisitor::endLink()
 {
-DB_VIS_C
+AD_VIS_C
   m_t << ">>";
 }
 
 void AsciidocDocVisitor::pushEnabled()
 {
-DB_VIS_C
+AD_VIS_C
   m_enabled.push(new bool(m_hide));
 }
 
 void AsciidocDocVisitor::popEnabled()
 {
-DB_VIS_C
+AD_VIS_C
   bool *v=m_enabled.pop();
   ASSERT(v!=0);
   m_hide = *v;
@@ -1540,7 +1538,7 @@ DB_VIS_C
 
 void AsciidocDocVisitor::writeMscFile(const QCString &baseName, DocVerbatim *s)
 {
-DB_VIS_C
+AD_VIS_C
   QCString shortName = baseName;
   int i;
   if ((i=shortName.findRev('/'))!=-1)
@@ -1556,7 +1554,7 @@ DB_VIS_C
 
 void AsciidocDocVisitor::writePlantUMLFile(const QCString &baseName, DocVerbatim *s)
 {
-DB_VIS_C
+AD_VIS_C
   QCString shortName = baseName;
   int i;
   if ((i=shortName.findRev('/'))!=-1)
@@ -1576,7 +1574,7 @@ void AsciidocDocVisitor::startMscFile(const QCString &fileName,
     bool hasCaption
     )
 {
-DB_VIS_C
+AD_VIS_C
   QCString baseName=fileName;
   int i;
   if ((i=baseName.findRev('/'))!=-1)
@@ -1595,7 +1593,7 @@ DB_VIS_C
 
 void AsciidocDocVisitor::endMscFile(bool hasCaption)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   visitADPostEnd(m_t, hasCaption);
   m_t << endl;
@@ -1604,7 +1602,7 @@ DB_VIS_C
 
 void AsciidocDocVisitor::writeDiaFile(const QCString &baseName, DocVerbatim *s)
 {
-DB_VIS_C
+AD_VIS_C
   QCString shortName = baseName;
   int i;
   if ((i=shortName.findRev('/'))!=-1)
@@ -1624,7 +1622,7 @@ void AsciidocDocVisitor::startDiaFile(const QCString &fileName,
     bool hasCaption
     )
 {
-DB_VIS_C
+AD_VIS_C
   QCString baseName=fileName;
   int i;
   if ((i=baseName.findRev('/'))!=-1)
@@ -1643,7 +1641,7 @@ DB_VIS_C
 
 void AsciidocDocVisitor::endDiaFile(bool hasCaption)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   visitADPostEnd(m_t, hasCaption);
   m_t << endl;
@@ -1652,7 +1650,7 @@ DB_VIS_C
 
 void AsciidocDocVisitor::writeDotFile(const QCString &baseName, DocVerbatim *s)
 {
-DB_VIS_C
+AD_VIS_C
   QCString shortName = baseName;
   int i;
   if ((i=shortName.findRev('/'))!=-1)
@@ -1672,7 +1670,7 @@ void AsciidocDocVisitor::startDotFile(const QCString &fileName,
     bool hasCaption
     )
 {
-DB_VIS_C
+AD_VIS_C
   QCString baseName=fileName;
   int i;
   if ((i=baseName.findRev('/'))!=-1)
@@ -1692,7 +1690,7 @@ DB_VIS_C
 
 void AsciidocDocVisitor::endDotFile(bool hasCaption)
 {
-DB_VIS_C
+AD_VIS_C
   if (m_hide) return;
   m_t << endl;
   visitADPostEnd(m_t, hasCaption);
