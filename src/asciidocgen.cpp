@@ -797,7 +797,7 @@ AD_GEN_C
 void AsciidocGenerator::startParameterList(bool openBracket)
 {
 AD_GEN_C
-  if (openBracket) t << "(";
+//    if (openBracket) t << "(";
 }
 void AsciidocGenerator::endParameterList()
 {
@@ -1016,7 +1016,7 @@ void AsciidocGenerator::endParameterName(bool last,bool /*emptyList*/,bool close
 AD_GEN_C
   if (last)
   {
-    if (closeBracket) t << ")";
+//    if (closeBracket) t << ")";
   }
 }
 void AsciidocGenerator::startCodeFragment()
