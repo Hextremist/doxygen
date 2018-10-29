@@ -57,11 +57,13 @@
 // debug inside output
 //#define Asciidoc_DB(x) QCString __t;__t.sprintf x;m_t << __t
 
-#if 0
+#if 1
+#define BLUE    "\x1b[34m"
+#define RESET   "\x1b[0m"
 #define AD_GEN_C AD_GEN_C1(t)
-#define AD_GEN_C1(x) x << "# AD_GEN_C " << __LINE__ << "\n";
+#define AD_GEN_C1(x) x << BLUE "AD_GEN_C " << __LINE__ << RESET;
 #define AD_GEN_C2(y) AD_GEN_C2a(t,y)
-#define AD_GEN_C2a(x,y) x << "# AD_GEN_C " << __LINE__ << " " << y << "\n";
+#define AD_GEN_C2a(x,y) x << BLUE "# AD_GEN_C " << __LINE__ << " " << y << RESET;
 #else
 #define AD_GEN_C
 #define AD_GEN_C1(x)
@@ -364,6 +366,7 @@ void AsciidocGenerator::init()
 void AsciidocGenerator::startFile(const char *name,const char *,const char *)
 {
 AD_GEN_C
+  t << "START FILE\n";
   QCString fileName=name;
   QCString pageName;
   QCString fileType="section";

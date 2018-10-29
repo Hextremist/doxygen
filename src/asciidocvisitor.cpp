@@ -36,11 +36,13 @@
 #include "htmlentity.h"
 #include "plantuml.h"
 
-#if 0
+#if 1
+#define GREEN   "\x1b[32m"
+#define RESET   "\x1b[0m"
 #define AD_VIS_C AD_VIS_C1(m_t)
-#define AD_VIS_C1(x) x << "# AD_VIS_C " << __LINE__ << "\n";
+#define AD_VIS_C1(x) x << GREEN "AD_VIS_C " << __LINE__ << RESET;
 #define AD_VIS_C2(y) AD_VIS_C2a(m_t,y)
-#define AD_VIS_C2a(x,y) x << "# AD_VIS_C " << __LINE__ << " " << y << "\n";
+#define AD_VIS_C2a(x,y) x << GREEN "AD_VIS_C " << __LINE__ << " " << y << RESET;
 #else
 #define AD_VIS_C
 #define AD_VIS_C1(x)
