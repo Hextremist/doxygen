@@ -394,6 +394,7 @@ AD_GEN_C
 void AsciidocGenerator::endFile()
 {
 AD_GEN_C
+  t << endl;
   endPlainFile();
 }
 
@@ -685,8 +686,7 @@ AD_GEN_C
 void AsciidocGenerator::writeDoc(DocNode *n,Definition *ctx,MemberDef *)
 {
 AD_GEN_C
-  AsciidocDocVisitor *visitor =
-    new AsciidocDocVisitor(t,*this);
+    AsciidocDocVisitor *visitor = new AsciidocDocVisitor(t,*this,ctx);
   n->accept(visitor);
   delete visitor;
 }
@@ -733,7 +733,7 @@ AD_GEN_C
     if (f) t << stripPath(f) << "_1";
   }
   else
-      t << " <<_" << stripPath(f);
+    t << "<<_" << stripPath(f);
   t << ',';
   docify(text);
   t << ">>";

@@ -19,6 +19,7 @@
 #include <qfileinfo.h>
 
 #include "asciidocvisitor.h"
+#include "definition.h"
 #include "docparser.h"
 #include "language.h"
 #include "doxygen.h"
@@ -110,10 +111,12 @@ static void visitCaption(AsciidocDocVisitor *parent, QList<DocNode> children)
   for (cli.toFirst();(n=cli.current());++cli) n->accept(parent);
 }
 
-AsciidocDocVisitor::AsciidocDocVisitor(FTextStream &t,CodeOutputInterface &ci)
+AsciidocDocVisitor::AsciidocDocVisitor(FTextStream &t,CodeOutputInterface &ci,
+				       Definition *ctx)
   : DocVisitor(DocVisitor_Asciidoc), m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE)
 {
 AD_VIS_C
+  if (ctx) m_langExt=ctx->getDefFileExtension();
 }
 AsciidocDocVisitor::~AsciidocDocVisitor()
 {
@@ -254,7 +257,7 @@ AD_VIS_C
   switch(s->type())
   {
     case DocVerbatim::Code: // fall though
-	m_t << "[source]" << endl;
+	m_t << "[source," << langExt << ']' << endl;
       Doxygen::parserManager->getParser(m_langExt)
         ->parseCode(m_ci,s->context(),s->text(),langExt,
             s->isExample(),s->exampleFile());
@@ -560,7 +563,8 @@ void AsciidocDocVisitor::visitPre(DocPara *)
 {
 AD_VIS_C
   if (m_hide) return;
-  m_t << endl;
+//m_t << "DOCPARA";
+  m_t <<endl;
 }
 
 void AsciidocDocVisitor::visitPost(DocPara *)
@@ -1448,15 +1452,13 @@ AD_VIS_C
 void AsciidocDocVisitor::visitPre(DocText *)
 {
 AD_VIS_C
-  // TODO: to be implemented
 }
 
 
 void AsciidocDocVisitor::visitPost(DocText *)
 {
 AD_VIS_C
-  // TODO: to be implemented
-  //m_t << txt->kind() << endl;
+  m_t << endl;
 }
 
 

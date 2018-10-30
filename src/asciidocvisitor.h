@@ -22,6 +22,7 @@
 #include <qstack.h>
 #include <qcstring.h>
 
+class Definition;
 class FTextStream;
 class CodeOutputInterface;
 class QCString;
@@ -33,7 +34,7 @@ void visitADPostEnd(FTextStream &t, const bool hasCaption);
 class AsciidocDocVisitor : public DocVisitor
 {
     public:
-    AsciidocDocVisitor(FTextStream &t,CodeOutputInterface &ci);
+    AsciidocDocVisitor(FTextStream &t,CodeOutputInterface &ci, Definition *ctx);
     ~AsciidocDocVisitor();
     //--------------------------------------
     // visitor functions for leaf nodes
