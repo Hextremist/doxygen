@@ -53,55 +53,21 @@
 
 void visitADPreStart(FTextStream &t, const bool hasCaption, QCString name,  QCString width,  QCString height)
 {
-  QCString tmpStr;
   if (hasCaption)
   {
-    t << "<figure>" << endl;
+    t << "." << convertToAsciidoc(name) << endl;
   }
-  else
+  t << "image::" << name << "[Image";
+  if (!width.isEmpty() || !height.isEmpty())
   {
-    t << "<informalfigure>" << endl;
+      t << ',' << convertToAsciidoc(width) << ',' << convertToAsciidoc(height);
   }
-  t << "<mediaobject>" << endl;
-  t << "<imageobject>" << endl;
-  t << "<imagedata";
-  if (!width.isEmpty())
-  {
-    t << " width=\"" << convertToAsciidoc(width) << "\"";
-  }
-  else
-  {
-    t << " width=\"50%\"";
-  }
-  if (!height.isEmpty())
-  {
-    t << " depth=\"" << convertToAsciidoc(tmpStr) << "\"";
-  }
-  t << " align=\"center\" valign=\"middle\" scalefit=\"0\" fileref=\"" << name << "\">";
-  t << "</imagedata>" << endl;
-  t << "</imageobject>" << endl;
-  if (hasCaption)
-  {
-    t << "        TITTEL1" << endl;
-  }
+  t << ']' << endl;
 }
 
 void visitADPostEnd(FTextStream &t, const bool hasCaption)
 {
   t << endl;
-  if (hasCaption)
-  {
-    t << "        TITTEL2" << endl;
-  }
-  t << "</mediaobject>" << endl;
-  if (hasCaption)
-  {
-    t << "</figure>" << endl;
-  }
-  else
-  {
-    t << "</informalfigure>" << endl;
-  }
 }
 
 static void visitCaption(AsciidocDocVisitor *parent, QList<DocNode> children)

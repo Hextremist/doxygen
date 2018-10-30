@@ -289,7 +289,8 @@ void AsciidocCodeGenerator::finish()
 {
   if (m_insideCodeLine) endCodeLine();
 }
-void AsciidocCodeGenerator::startCodeFragment()
+
+void AsciidocCodeGenerator::startCodeFragment(SrcLangExt lang)
 {
   m_t << "[source]" << endl;
   m_t << "----" << endl;
@@ -930,17 +931,14 @@ AD_GEN_C
 void AsciidocGenerator::startClassDiagram()
 {
 AD_GEN_C
-  t << "STARTCLASSDIAGRAM" << endl;
 }
 
 void AsciidocGenerator::endClassDiagram(const ClassDiagram &d, const char *fileName,const char *)
 {
 AD_GEN_C
-    t << "ENDCLASSDIAGRAM\n";
   visitADPreStart(t, FALSE, relPath + fileName + ".png", NULL, NULL);
   d.writeImage(t,dir,relPath,fileName,FALSE);
   visitADPostEnd(t, FALSE);
-  t << endl;
   t << endl;
 }
 void  AsciidocGenerator::startLabels()
@@ -1022,7 +1020,7 @@ AD_GEN_C
 //    if (closeBracket) t << ")";
   }
 }
-void AsciidocGenerator::startCodeFragment()
+void AsciidocGenerator::startCodeFragment(SrcLangExt lang)
 {
 AD_GEN_C
   t << "[source]" << endl;
