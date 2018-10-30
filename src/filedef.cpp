@@ -508,6 +508,10 @@ void FileDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
       { 
         ol.disable(OutputGenerator::Docbook);
       }
+      if (ol.isEnabled(OutputGenerator::Asciidoc) && !Config_getBool(ASCIIDOC_PROGRAMLISTING))
+      { 
+        ol.disable(OutputGenerator::Asciidoc);
+      }
       if (ol.isEnabled(OutputGenerator::RTF) && !Config_getBool(RTF_SOURCE_CODE))
       { 
         ol.disable(OutputGenerator::RTF);
@@ -1157,6 +1161,7 @@ void FileDefImpl::writeSource(OutputList &ol,bool sameTu,QStrList &filesInSameTu
   static bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
   static bool latexSourceCode   = Config_getBool(LATEX_SOURCE_CODE);
   static bool docbookSourceCode = Config_getBool(DOCBOOK_PROGRAMLISTING);
+  static bool asciidocSourceCode = Config_getBool(ASCIIDOC_PROGRAMLISTING);
   static bool rtfSourceCode     = Config_getBool(RTF_SOURCE_CODE);
   DevNullCodeDocInterface devNullIntf;
   QCString title = m_docname;
@@ -1168,6 +1173,7 @@ void FileDefImpl::writeSource(OutputList &ol,bool sameTu,QStrList &filesInSameTu
   ol.disable(OutputGenerator::Man);
   if (!latexSourceCode) ol.disable(OutputGenerator::Latex);
   if (!docbookSourceCode) ol.disable(OutputGenerator::Docbook);
+  if (!asciidocSourceCode) ol.disable(OutputGenerator::Asciidoc);
   if (!rtfSourceCode) ol.disable(OutputGenerator::RTF);
 
   bool isDocFile = isDocumentationFile();
@@ -1203,6 +1209,7 @@ void FileDefImpl::writeSource(OutputList &ol,bool sameTu,QStrList &filesInSameTu
     if (latexSourceCode) ol.disable(OutputGenerator::Latex);
     if (rtfSourceCode) ol.disable(OutputGenerator::RTF);
     if (docbookSourceCode) ol.disable(OutputGenerator::Docbook);
+    if (asciidocSourceCode) ol.disable(OutputGenerator::Asciidoc);
     ol.startTextLink(getOutputFileBase(),0);
     ol.parseText(theTranslator->trGotoDocumentation());
     ol.endTextLink();
@@ -1216,7 +1223,7 @@ void FileDefImpl::writeSource(OutputList &ol,bool sameTu,QStrList &filesInSameTu
   if (clangAssistedParsing && 
       (getLanguage()==SrcLangExt_Cpp || getLanguage()==SrcLangExt_ObjC))
   {
-    ol.startCodeFragment();
+    ol.startCodeFragment(getLanguage());
     if (!sameTu)
     {
       ClangParser::instance()->start(absFilePath(),filesInSameTu);
@@ -1233,7 +1240,7 @@ void FileDefImpl::writeSource(OutputList &ol,bool sameTu,QStrList &filesInSameTu
   {
     ParserInterface *pIntf = Doxygen::parserManager->getParser(getDefFileExtension());
     pIntf->resetCodeParserState();
-    ol.startCodeFragment();
+    ol.startCodeFragment(getLanguage());
     bool needs2PassParsing = 
         Doxygen::parseSourcesNeeded &&                // we need to parse (filtered) sources for cross-references
         !filterSourceFiles &&                         // but user wants to show sources as-is

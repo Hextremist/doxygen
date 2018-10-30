@@ -1281,7 +1281,7 @@ void DefinitionImpl::writeInlineCode(OutputList &ol,const char *scopeName) const
       const MemberDef *thisMd = 0;
       if (definitionType()==TypeMember) thisMd = dynamic_cast <const MemberDef*>(this);
 
-      ol.startCodeFragment();
+      ol.startCodeFragment(m_impl->lang);
       pIntf->parseCode(ol,               // codeOutIntf
                        scopeName,        // scope
                        codeFragment,     // input

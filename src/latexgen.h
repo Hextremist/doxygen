@@ -199,7 +199,7 @@ class LatexGenerator : public OutputGenerator
 
     void writeRuler() { t << endl << endl; }
     void writeAnchor(const char *fileName,const char *name);
-    void startCodeFragment();
+    void startCodeFragment(SrcLangExt lang);
     void endCodeFragment();
     void startEmphasis() { t << "{\\em ";  }
     void endEmphasis()   { t << "}"; }

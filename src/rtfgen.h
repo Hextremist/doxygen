@@ -125,7 +125,7 @@ class RTFGenerator : public OutputGenerator
     void writeRuler() { rtfwriteRuler_thin(); }
 	
     void writeAnchor(const char *fileName,const char *name);
-    void startCodeFragment();
+    void startCodeFragment(SrcLangExt lang);
     void endCodeFragment();
     void writeLineNumber(const char *,const char *,const char *,int l);
     void startCodeLine(bool);

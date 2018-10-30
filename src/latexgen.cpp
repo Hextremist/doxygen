@@ -2246,7 +2246,7 @@ void LatexGenerator::endConstraintList()
   t << "\\end{Desc}" << endl;
 }
 
-void LatexGenerator::startCodeFragment()
+void LatexGenerator::startCodeFragment(SrcLangExt)
 {
   t << "\n\\begin{DoxyCode}{" << usedTableLevels() << "}\n";
   DoxyCodeOpen = TRUE;

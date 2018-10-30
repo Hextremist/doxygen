@@ -23,6 +23,7 @@
 #include "index.h"
 #include "section.h"
 #include "ftextstream.h"
+#include "types.h"
 
 class ClassDiagram;
 class DotClassGraph;
@@ -243,8 +244,9 @@ class BaseOutputDocInterface : public CodeOutputInterface
      *  fed to the code parser (see code.h) for syntax highlighting
      *  and cross-referencing. The fragment ends by a call to
      *  endCodeFragment()
+     * \param lang code language
      */
-    virtual void startCodeFragment() = 0;
+    virtual void startCodeFragment(SrcLangExt lang) = 0;
 
     /*! Ends a source code fragment
      */

@@ -130,7 +130,7 @@ class ManGenerator : public OutputGenerator
 
     void writeRuler()    {}
     void writeAnchor(const char *,const char *) {}
-    void startCodeFragment();
+    void startCodeFragment(SrcLangExt lang);
     void endCodeFragment();
     void writeLineNumber(const char *,const char *,const char *,int l) { t << l << " "; }
     void startCodeLine(bool) {}

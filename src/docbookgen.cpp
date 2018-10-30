@@ -1002,7 +1002,7 @@ DB_GEN_C
     if (closeBracket) t << ")";
   }
 }
-void DocbookGenerator::startCodeFragment()
+void DocbookGenerator::startCodeFragment(SrcLangExt)
 {
 DB_GEN_C
     t << "<programlisting>";

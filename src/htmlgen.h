@@ -20,6 +20,7 @@
 
 #include "outputgen.h"
 #include "ftextstream.h"
+#include "types.h"
 
 //#define PREFRAG_START "<div class=\"fragment\"><pre class=\"fragment\">"
 //#define PREFRAG_END   "</pre></div>"

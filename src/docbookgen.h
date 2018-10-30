@@ -184,7 +184,7 @@ class DocbookGenerator : public OutputGenerator
     void endTypewriter(void);
     void startEmphasis(void){DB_GEN_NEW};
     void endEmphasis(void){DB_GEN_NEW};
-    void startCodeFragment(void);
+    void startCodeFragment(SrcLangExt lang);
     void endCodeFragment(void);
     void writeRuler(void);
     void startDescription(void){DB_GEN_NEW};

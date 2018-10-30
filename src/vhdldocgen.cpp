@@ -2446,7 +2446,7 @@ void VhdlDocGen::writeSource(const MemberDef *mdef,OutputList& ol,const QCString
 
   codeFragment.prepend("\n");
   ol.pushGeneratorState();
-  ol.startCodeFragment();
+  ol.startCodeFragment(SrcLangExt_VHDL);
   pIntf->parseCode(ol,                   // codeOutIntf
                        0,                // scope
                        codeFragment,     // input

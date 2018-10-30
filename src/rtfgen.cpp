@@ -1939,7 +1939,7 @@ void RTFGenerator::writeRTFReference(const char *label)
   t << " \\\\*MERGEFORMAT}{\\fldrslt pagenum}}";
 }
 
-void RTFGenerator::startCodeFragment()
+void RTFGenerator::startCodeFragment(SrcLangExt)
 {
   DBG_RTF(t << "{\\comment (startCodeFragment) }"    << endl)
   t << "{" << endl;

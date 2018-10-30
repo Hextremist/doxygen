@@ -401,7 +401,7 @@ void ManGenerator::endItemListItem()
 {
 }
 
-void ManGenerator::startCodeFragment() 
+void ManGenerator::startCodeFragment(SrcLangExt)
 { 
   newParagraph();
   t << ".nf" << endl; 
