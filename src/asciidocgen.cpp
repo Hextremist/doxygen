@@ -761,7 +761,7 @@ AD_GEN_C
 void AsciidocGenerator::endMemberItem()
 {
 AD_GEN_C
-  t << endl;
+    t << " +" << endl;
 }
 void AsciidocGenerator::startBold(void)
 {
@@ -789,6 +789,7 @@ AD_GEN_C2("m_inLevel " << m_inLevel)
 AD_GEN_C2("m_inGroup " << m_inGroup)
   if (m_inGroup) t << endl;
   m_inGroup = FALSE;
+  // {hruler}
 }
 
 void AsciidocGenerator::endGroupHeader(int)
@@ -802,11 +803,11 @@ void AsciidocGenerator::startParameterList(bool openBracket)
 {
 AD_GEN_C
 //    if (openBracket) t << "(";
+//  t << "``";
 }
 void AsciidocGenerator::endParameterList()
 {
 AD_GEN_C
-  t << "``";
 }
 void AsciidocGenerator::writeNonBreakableSpace(int n)
 {
@@ -868,7 +869,7 @@ AD_GEN_C2("m_inLevel " << m_inLevel)
 void AsciidocGenerator::endMemberDoc(bool)
 {
 AD_GEN_C
-  t << endl;
+  t << "``" << endl;
 }
 void AsciidocGenerator::startTitleHead(const char *)
 {
@@ -898,6 +899,7 @@ AD_GEN_C
 void AsciidocGenerator::endDoxyAnchor(const char *fileName,const char *anchor)
 {
 AD_GEN_C
+    t << endl; // Needed
 }
 void AsciidocGenerator::startMemberDocName(bool)
 {
@@ -1059,14 +1061,8 @@ AD_GEN_C
 void AsciidocGenerator::startDescTable(const char *title)
 {
 AD_GEN_C
-  int ncols = 2;
-  t << "[cols=\"";
-  for (int i = 0; i < ncols; i++)
-  {
-    t << "<colspec colname='c" << i+1 << "'/>\n";
-  }
-  t << "\"]" << endl;
-  //if (title)t << "=== " << convertToAsciidoc(title) << endl;
+  // if (title) t << "." << convertToAsciidoc(title) << endl;
+  t << "[cols=\"1,5\"]" << endl;
   t << "|===" << endl;
   m_descTable = TRUE;
 }
@@ -1103,13 +1099,12 @@ AD_GEN_C
 void AsciidocGenerator::startDescTableData()
 {
 AD_GEN_C
-  t << "</entry><entry>";
+  t << "| ";
 }
 
 void AsciidocGenerator::endDescTableData()
 {
 AD_GEN_C
-  t << "</entry>";
 }
 void AsciidocGenerator::startGroupCollaboration()
 {

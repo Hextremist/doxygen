@@ -6166,21 +6166,37 @@ QCString convertToAsciidoc(const char *s)
 {
 #warning Fix conversion
   static GrowBuf growBuf;
-  growBuf.clear();
   if (s==0) return "";
+  growBuf.clear();
   const unsigned char *q;
   int cnt;
-  const unsigned char *p=(const unsigned char *)s;
-  char c;
-  while ((c=*p++))
+  const char *p = s;
+  bool clean = true;
+
+  for (p = s; *p; ++p)
   {
-    switch (c)
-    {
+      switch (*s)
+      {
+      case '*':
+      case '_':
+      case '#':
+      case '`':
+	  clean = false;
+	  break;
       default:
-	growBuf.addChar(c);   break;
-    }
+	  break;
+      }
   }
-  growBuf.addChar(0);
+  if (clean)
+  {
+    growBuf.addStr(s);
+  }
+  else
+  {
+    growBuf.addStr("pass:c[");
+    growBuf.addStr(s);
+    growBuf.addStr("]");
+  }
   return growBuf.get();
 }
 

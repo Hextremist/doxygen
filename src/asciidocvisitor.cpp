@@ -62,7 +62,7 @@ void visitADPreStart(FTextStream &t, const bool hasCaption, QCString name,  QCSt
   {
       t << ',' << convertToAsciidoc(width) << ',' << convertToAsciidoc(height);
   }
-  t << ']' << endl;
+  t << ",opts=inline]" << endl;
 }
 
 void visitADPostEnd(FTextStream &t, const bool hasCaption)
@@ -529,8 +529,6 @@ void AsciidocDocVisitor::visitPre(DocPara *)
 {
 AD_VIS_C
   if (m_hide) return;
-//m_t << "DOCPARA";
-  m_t <<endl;
 }
 
 void AsciidocDocVisitor::visitPost(DocPara *)
@@ -717,7 +715,7 @@ AD_VIS_C
       m_t << "====" << endl;
       m_t << endl;
     default:
-	m_t << endl;
+      m_t << endl;
       break;
   }
 }
@@ -733,19 +731,21 @@ void AsciidocDocVisitor::visitPost(DocTitle *t)
 {
 AD_VIS_C
   if (m_hide) return;
-  m_t << endl;
+  if (t->hasTitle()) m_t << endl;
 }
 
 void AsciidocDocVisitor::visitPre(DocSimpleList *)
 {
 AD_VIS_C
   if (m_hide) return;
+    m_t << "PRE\n";
 }
 
 void AsciidocDocVisitor::visitPost(DocSimpleList *)
 {
 AD_VIS_C
   if (m_hide) return;
+    m_t << "POST\n";
   m_t << endl;
 }
 
@@ -1239,7 +1239,8 @@ void AsciidocDocVisitor::visitPre(DocParamSect *s)
 {
 AD_VIS_C
   if (m_hide) return;
-  m_t << "==== ";
+  m_t << endl;
+  m_t << endl << "==== ";
   switch(s->type())
   {
     case DocParamSect::Param:         m_t << theTranslator->trParameters();         break;
@@ -1251,30 +1252,12 @@ AD_VIS_C
   }
   m_t << endl;
   m_t << endl;
-  int ncols = 2;
-  if (s->type() == DocParamSect::Param)
-  {
-    bool hasInOutSpecs = s->hasInOutSpecifier();
-    bool hasTypeSpecs  = s->hasTypeSpecifier();
-    if      (hasInOutSpecs && hasTypeSpecs) ncols += 2;
-    else if (hasInOutSpecs || hasTypeSpecs) ncols += 1;
-  }
-  m_t << "[cols=\"";
-  for (int i = 1; i <= ncols; i++)
-  {
-    if (i == ncols) m_t << 4;
-    else m_t << 1;
-    if (i < ncols) m_t << ',';
-  }
-  m_t << "\"]" << endl;
-  m_t << "|===" << endl;
 }
 
 void AsciidocDocVisitor::visitPost(DocParamSect *)
 {
 AD_VIS_C
   if (m_hide) return;
-  m_t << "|===" << endl;
   m_t << endl;
 }
 
@@ -1282,49 +1265,6 @@ void AsciidocDocVisitor::visitPre(DocParamList *pl)
 {
 AD_VIS_C
   if (m_hide) return;
-  m_t << "| " << endl;
-
-  DocParamSect::Type parentType = DocParamSect::Unknown;
-  DocParamSect *sect = 0;
-  if (pl->parent() && pl->parent()->kind()==DocNode::Kind_ParamSect)
-  {
-    parentType = ((DocParamSect*)pl->parent())->type();
-    sect=(DocParamSect*)pl->parent();
-  }
-
-  if (sect && sect->hasInOutSpecifier())
-  {
-    m_t << "|2 ";
-    if (pl->direction()!=DocParamSect::Unspecified)
-    {
-      if (pl->direction()==DocParamSect::In) m_t << "in";
-      else if (pl->direction()==DocParamSect::Out) m_t << "out";
-      else if (pl->direction()==DocParamSect::InOut) m_t << "in,out";
-    }
-    m_t << " ";
-  }
-
-  if (sect && sect->hasTypeSpecifier())
-  {
-    QListIterator<DocNode> li(pl->paramTypes());
-    DocNode *type;
-    bool first=TRUE;
-    m_t << "|3 ";
-    for (li.toFirst();(type=li.current());++li)
-    {
-      if (!first) m_t << " X|X "; else first=FALSE;
-      if (type->kind()==DocNode::Kind_Word)
-      {
-        visit((DocWord*)type);
-      }
-      else if (type->kind()==DocNode::Kind_LinkedWord)
-      {
-        visit((DocLinkedWord*)type);
-      }
-    }
-    m_t << endl;
-  }
-
   QListIterator<DocNode> li(pl->parameters());
   DocNode *param;
   if (!li.toFirst())
@@ -1333,7 +1273,6 @@ AD_VIS_C
   }
   else
   {
-    m_t << "|5 ";
     int cnt = 0;
     for (li.toFirst();(param=li.current());++li)
     {
@@ -1352,7 +1291,52 @@ AD_VIS_C
       cnt++;
     }
   }
-  m_t << "XXXX" << endl;
+
+  DocParamSect::Type parentType = DocParamSect::Unknown;
+  DocParamSect *sect = 0;
+  if (pl->parent() && pl->parent()->kind()==DocNode::Kind_ParamSect)
+  {
+    parentType = ((DocParamSect*)pl->parent())->type();
+    sect=(DocParamSect*)pl->parent();
+  }
+
+  if (sect)
+  {
+    if (sect->hasInOutSpecifier())
+    {
+      if (pl->direction()!=DocParamSect::Unspecified)
+      {
+	m_t << " [.small]#";
+	if (pl->direction()==DocParamSect::In) m_t << "[in]";
+	else if (pl->direction()==DocParamSect::Out) m_t << "[out]";
+	else if (pl->direction()==DocParamSect::InOut) m_t << "[in,out]";
+	m_t << "#";
+      }
+    }
+
+    if (sect->hasTypeSpecifier())
+    {
+      QListIterator<DocNode> li(pl->paramTypes());
+      DocNode *type;
+      bool first=TRUE;
+      m_t << "|3 ";
+      for (li.toFirst();(type=li.current());++li)
+      {
+	if (!first) m_t << " X|X "; else first=FALSE;
+	if (type->kind()==DocNode::Kind_Word)
+	{
+	  visit((DocWord*)type);
+	}
+	else if (type->kind()==DocNode::Kind_LinkedWord)
+	{
+	  visit((DocLinkedWord*)type);
+	}
+      }
+      m_t << endl;
+    }
+  }
+
+  m_t << "::" << endl;
 }
 
 void AsciidocDocVisitor::visitPost(DocParamList *)
