@@ -197,8 +197,7 @@ void AsciidocCodeGenerator::codify(const char *text)
   writeAsciidocCodeString(m_t,text,m_col);
 }
 void AsciidocCodeGenerator::writeCodeLink(const char *ref,const char *file,
-    const char *anchor,const char *name,
-    const char *tooltip)
+    const char *anchor,const char *name, const char *tooltip)
 {
   Asciidoc_DB(("(writeCodeLink)\n"));
   writeAsciidocLink(m_t,ref,file,anchor,name,tooltip);
@@ -893,7 +892,7 @@ AD_GEN_C
   }
   if (anchor)
   {
-      t << "[[_" << stripPath(fName) << "_1" << anchor << "]]" << endl;
+      t << "[[_" << anchor << stripPath(fName) << "_1" << "]]" << endl;
   }
 }
 void AsciidocGenerator::endDoxyAnchor(const char *fileName,const char *anchor)
