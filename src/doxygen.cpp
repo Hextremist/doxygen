@@ -10589,9 +10589,12 @@ void readConfiguration(int argc, char **argv)
           cleanUpDoxygen();
           exit(0);
         }
+	else if (qstricmp(formatName,"asciidoc")==0)
+        {
+	}
         else
         {
-          err("Illegal format specifier \"%s\": should be one of rtf, html or latex\n",formatName);
+          err("Illegal format specifier \"%s\": should be one of rtf, html, latex or asciidoc\n",formatName);
           cleanUpDoxygen();
           exit(1);
         }

@@ -147,6 +147,11 @@ static void addIndexTerm(FTextStream &t, QCString prim, QCString sec = "")
   // No indexterm support in asciidoc yet
 }
 
+static void writeInclude(FTextStream &t, const char *const filename)
+{
+    t << "include::" << filename << ".adoc[leveloffset=+1]" << endl;
+}
+
 void writeAsciidocLink(FTextStream &t,const char * /*extRef*/,const char *compoundId,
     const char *anchorId,const char * text,const char * /*tooltip*/)
 {
@@ -404,62 +409,34 @@ AD_GEN_C2("IndexSections " << is)
   switch (is)
   {
     case isTitlePageStart:
-      {
-        QCString dbk_projectName = Config_getString(PROJECT_NAME);
-        t << "<info>" << endl;
-        t << "== " << convertToAsciidoc(dbk_projectName) << endl;
-	t << endl;
-        t << "    </info>" << endl;
-      }
+      t << ":toc: left" << endl;
+      t << endl;
+      t << "= " << convertToAsciidoc(Config_getString(PROJECT_NAME)) << ": "
+	<< convertToAsciidoc(Config_getString(PROJECT_BRIEF)) << endl;
+      t << endl;
+      t << "== Introduction" << endl;
       break;
     case isTitlePageAuthor:
+      t << "=== ";
       break;
     case isMainPage:
-      t << "== ";
-      break;
     case isModuleIndex:
-      //Module Index}\n"
-      break;
     case isDirIndex:
-      //Directory Index}\n"
-      break;
     case isNamespaceIndex:
-      //Namespace Index}\n"
-      break;
     case isClassHierarchyIndex:
-      //Hierarchical Index}\n"
-      break;
     case isCompoundIndex:
-      //t << "{"; //Class Index}\n"
-      break;
     case isFileIndex:
-      //Annotated File Index}\n"
-      break;
     case isPageIndex:
-      //Annotated Page Index}\n"
-      break;
     case isModuleDocumentation:
-      t << "== ";
-      break;
     case isDirDocumentation:
-      t << "== ";
-      break;
     case isNamespaceDocumentation:
-      t << "== ";
-      break;
     case isClassDocumentation:
-      t << "== ";
-      break;
     case isFileDocumentation:
-      t << "== ";
-      break;
     case isExampleDocumentation:
       t << "== ";
       break;
     case isPageDocumentation:
-      break;
     case isPageDocumentation2:
-      break;
     case isEndIndex:
       break;
   }
@@ -481,27 +458,24 @@ AD_GEN_C2("IndexSections " << is)
       //t << "</chapter>" << endl;
       break;
     case isDirIndex:
-      //t << "<xi:include href=\"dirs.xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>";
-      //t << "</chapter>" << endl;
+      writeInclude(t, "dirs");
       break;
     case isNamespaceIndex:
-      //t << "<xi:include href=\"namespaces.xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>";
-      //t << "</chapter>" << endl;
+      writeInclude(t, "namespaces");
       break;
     case isClassHierarchyIndex:
-      //t << "<xi:include href=\"hierarchy.xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>";
-      //t << "</chapter>" << endl;
+      writeInclude(t, "hierarchy");
+      t << endl;
       break;
     case isCompoundIndex:
-      //t << "</chapter>" << endl;
+      writeInclude(t, "annotated");
+      t << endl;
       break;
     case isFileIndex:
-      //t << "<xi:include href=\"files.xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>";
-      //t << "</chapter>" << endl;
+      //writeInclude(t, files);
       break;
     case isPageIndex:
-      //t << "<xi:include href=\"pages.xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>";
-      //t << "</chapter>" << endl;
+      //writeInclude(t, pages);
       break;
     case isModuleDocumentation:
       {
@@ -512,7 +486,7 @@ AD_GEN_C2("IndexSections " << is)
         {
           if (!gd->isReference())
           {
-            t << "<xi:include href=\"" << gd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
+	    writeInclude(t, gd->getOutputFileBase());
             found=TRUE;
           }
         }
@@ -520,7 +494,7 @@ AD_GEN_C2("IndexSections " << is)
         {
           if (!gd->isReference())
           {
-            t << "<xi:include href=\"" << gd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
+	    writeInclude(t, gd->getOutputFileBase());
           }
         }
       }
@@ -535,7 +509,7 @@ AD_GEN_C2("IndexSections " << is)
         {
           if (dd->isLinkableInProject())
           {
-            t << "<    xi:include href=\"" << dd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
+	    writeInclude(t, dd->getOutputFileBase());
             found=TRUE;
           }
         }
@@ -543,7 +517,7 @@ AD_GEN_C2("IndexSections " << is)
         {
           if (dd->isLinkableInProject())
           {
-            t << "<xi:include href=\"" << dd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
+	    writeInclude(t, dd->getOutputFileBase());
           }
         }
       }
@@ -557,7 +531,7 @@ AD_GEN_C2("IndexSections " << is)
         {
           if (nd->isLinkableInProject())
           {
-            t << "<xi:include href=\"" << nd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
+	    writeInclude(t, nd->getOutputFileBase());
             found=TRUE;
           }
         }
@@ -565,7 +539,7 @@ AD_GEN_C2("IndexSections " << is)
         {
           if (nd->isLinkableInProject())
           {
-            t << "<xi:include href=\"" << nd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
+	    writeInclude(t, nd->getOutputFileBase());
           }
           ++nli;
         }
@@ -584,7 +558,7 @@ AD_GEN_C2("IndexSections " << is)
              !cd->isEmbeddedInOuterScope()
              )
           {
-            t << "<xi:include href=\"" << cd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
+	    writeInclude(t, cd->getOutputFileBase());
             found=TRUE;
           }
         }
@@ -595,7 +569,7 @@ AD_GEN_C2("IndexSections " << is)
              !cd->isEmbeddedInOuterScope()
              )
           {
-            t << "<xi:include href=\"" << cd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
+	    writeInclude(t, cd->getOutputFileBase());
           } 
         }
       }
@@ -616,19 +590,19 @@ AD_GEN_C2("IndexSections " << is)
             {
               if (isFirst)
               {
-                t << "<xi:include href=\"" << fd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
+		writeInclude(t, fd->getOutputFileBase());
                 if (sourceBrowser && m_prettyCode && fd->generateSourceFile())
                 {
-                  t << "<xi:include href=\"" << fd->getSourceFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
+		  writeInclude(t, fd->getSourceFileBase());
                 }
                 isFirst=FALSE;
               }
               else
               {
-                t << "<xi:include href=\"" << fd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
+		writeInclude(t, fd->getOutputFileBase());
                 if (sourceBrowser && m_prettyCode && fd->generateSourceFile())
                 {
-                  t << "<xi:include href=\"" << fd->getSourceFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
+		  writeInclude(t, fd->getSourceFileBase());
                 }
               }
             }
@@ -643,11 +617,11 @@ AD_GEN_C2("IndexSections " << is)
         PageDef *pd=pdi.toFirst();
         if (pd)
         {
-          t << "<xi:include href=\"" << pd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
+	  writeInclude(t, pd->getOutputFileBase());
         }
         for (++pdi;(pd=pdi.current());++pdi)
         {
-          t << "<xi:include href=\"" << pd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
+	  writeInclude(t, pd->getOutputFileBase());
         }
       }
       t << "</chapter>\n";
@@ -657,7 +631,6 @@ AD_GEN_C2("IndexSections " << is)
     case isPageDocumentation2:
       break;
     case isEndIndex:
-      t << "<index/>" << endl;
       break;
   }
 }
@@ -679,7 +652,7 @@ AD_GEN_C
         t << "== " << convertToAsciidoc(pd->name()) << endl;
       }
       t << endl;
-      t << "<xi:include href=\"" << pd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
+      writeInclude(t, pd->getOutputFileBase());
     }
   }
 }

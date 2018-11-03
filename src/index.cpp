@@ -4563,11 +4563,12 @@ static void writeIndex(OutputList &ol)
   ol.disable(OutputGenerator::Html);
 
   //--------------------------------------------------------------------
-  // write LaTeX/RTF index
+  // write LaTeX/RTF/Asciidoc index
   //--------------------------------------------------------------------
   ol.enable(OutputGenerator::Latex);
   ol.enable(OutputGenerator::Docbook);
   ol.enable(OutputGenerator::RTF);
+  ol.enable(OutputGenerator::Asciidoc);
 
   ol.startFile("refman",0,0);
   ol.startIndexSection(isTitlePageStart);
