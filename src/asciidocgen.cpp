@@ -63,7 +63,7 @@
 #define AD_GEN_C AD_GEN_C1(t)
 #define AD_GEN_C1(x) x << BLUE "AD_GEN_C " << __LINE__ << RESET;
 #define AD_GEN_C2(y) AD_GEN_C2a(t,y)
-#define AD_GEN_C2a(x,y) x << BLUE "# AD_GEN_C " << __LINE__ << " " << y << RESET;
+#define AD_GEN_C2a(x,y) x << BLUE "AD_GEN_C " << __LINE__ << ":" << y << RESET;
 #else
 #define AD_GEN_C
 #define AD_GEN_C1(x)
@@ -396,6 +396,16 @@ AD_GEN_C
   if (!pageName.isEmpty()) t << "[[_" <<  stripPath(pageName) << "]]" << endl;
 }
 
+void AsciidocGenerator::writeSearchInfo()
+{
+AD_GEN_C
+}
+
+void AsciidocGenerator::writeFooter(const char *)
+{
+AD_GEN_C
+}
+
 void AsciidocGenerator::endFile()
 {
 AD_GEN_C
@@ -409,12 +419,11 @@ AD_GEN_C2("IndexSections " << is)
   switch (is)
   {
     case isTitlePageStart:
-      t << ":toc: left" << endl;
-      t << endl;
       t << "= " << convertToAsciidoc(Config_getString(PROJECT_NAME)) << ": "
-	<< convertToAsciidoc(Config_getString(PROJECT_BRIEF)) << endl;
-      t << endl;
-      t << "== Introduction" << endl;
+	<< convertToAsciidoc(Config_getString(PROJECT_BRIEF)) << endl
+	<< ":toc: left" << endl
+	<< endl
+	<< "== Introduction" << endl;
       break;
     case isTitlePageAuthor:
       t << "=== ";
@@ -606,10 +615,11 @@ AD_GEN_C2("IndexSections " << is)
                 }
               }
             }
+	    else printf ("NOT LINKABLE\n");
           }
         }
       }
-      t << "</chapter>\n";
+      t << endl;
       break;
     case isExampleDocumentation:
       {
@@ -656,6 +666,22 @@ AD_GEN_C
     }
   }
 }
+
+void AsciidocGenerator::startProjectNumber()
+{
+AD_GEN_C
+}
+
+void AsciidocGenerator::endProjectNumber()
+{
+AD_GEN_C
+}
+
+void AsciidocGenerator::writeStyleInfo(int)
+{
+AD_GEN_C
+}
+
 void AsciidocGenerator::writeDoc(DocNode *n,Definition *ctx,MemberDef *)
 {
 AD_GEN_C
@@ -672,6 +698,7 @@ AD_GEN_C
 void AsciidocGenerator::endParagraph()
 {
 AD_GEN_C
+  t << endl;
   t << endl;
 }
 void AsciidocGenerator::writeString(const char *text)
@@ -691,6 +718,17 @@ void AsciidocGenerator::endMemberHeader()
 AD_GEN_C
   t << endl;
 }
+void AsciidocGenerator::startMemberSubtitle()
+{
+AD_GEN_C
+  t << endl;
+}
+void AsciidocGenerator::endMemberSubtitle()
+{
+AD_GEN_C
+  t << endl;
+}
+
 void AsciidocGenerator::docify(const char *str)
 {
 AD_GEN_C
@@ -699,6 +737,7 @@ AD_GEN_C
 void AsciidocGenerator::writeObjectLink(const char *ref, const char *f,
 					const char *anchor, const char *text)
 {
+    printf ("Her\n");
 AD_GEN_C
   if (anchor)
   {
@@ -711,6 +750,17 @@ AD_GEN_C
   docify(text);
   t << ">>";
 }
+
+void AsciidocGenerator::startHtmlLink(const char *)
+{
+AD_GEN_C
+}
+
+void AsciidocGenerator::endHtmlLink()
+{
+AD_GEN_C
+}
+
 void AsciidocGenerator::startMemberList()
 {
 AD_GEN_C
@@ -724,6 +774,24 @@ AD_GEN_C
   m_inSimpleSect[m_levelListItem] = FALSE;
   t << endl;
 }
+
+void AsciidocGenerator::startInlineHeader()
+{
+AD_GEN_C
+}
+void AsciidocGenerator::endInlineHeader()
+{
+AD_GEN_C
+}
+void AsciidocGenerator::startAnonTypeScope(int)
+{
+AD_GEN_C
+}
+void AsciidocGenerator::endAnonTypeScope(int)
+{
+AD_GEN_C
+}
+
 void AsciidocGenerator::startMemberItem(const char *,int,const char *)
 {
 AD_GEN_C
@@ -764,11 +832,73 @@ AD_GEN_C2("m_inGroup " << m_inGroup)
   // {hruler}
 }
 
+void AsciidocGenerator::startDescription()
+{
+AD_GEN_C;
+}
+void AsciidocGenerator::endDescription()
+{
+AD_GEN_C;
+}
+void AsciidocGenerator::startDescItem()
+{
+AD_GEN_C;
+}
+void AsciidocGenerator::startDescForItem()
+{
+AD_GEN_C;
+}
+void AsciidocGenerator::endDescForItem()
+{
+AD_GEN_C;
+}
+void AsciidocGenerator::endDescItem()
+{
+AD_GEN_C;
+}
+
+void AsciidocGenerator::startCenter()
+{
+AD_GEN_C;
+}
+void AsciidocGenerator::endCenter()
+{
+AD_GEN_C;
+}
+
+void AsciidocGenerator::startSmall()
+{
+AD_GEN_C;
+t << "[.small]#";
+}
+void AsciidocGenerator::endSmall()
+{
+AD_GEN_C;
+t << "#";
+}
+
 void AsciidocGenerator::endGroupHeader(int)
 {
 AD_GEN_C
   t << endl;
   t << endl;
+}
+
+void AsciidocGenerator::startMemberSections()
+{
+AD_GEN_C;
+}
+void AsciidocGenerator::endMemberSections()
+{
+AD_GEN_C;
+}
+void AsciidocGenerator::startHeaderSection()
+{
+AD_GEN_C;
+}
+void AsciidocGenerator::endHeaderSection()
+{
+AD_GEN_C;
 }
 
 void AsciidocGenerator::startParameterList(bool openBracket)
@@ -791,6 +921,7 @@ void AsciidocGenerator::lineBreak(const char *)
 AD_GEN_C
   t << endl;
 }
+
 void AsciidocGenerator::startTypewriter()
 {
 AD_GEN_C
@@ -799,8 +930,20 @@ AD_GEN_C
 void AsciidocGenerator::endTypewriter()
 {
 AD_GEN_C
-  if (!m_denseText) t << "``" << endl;
+  if (!m_denseText) t << "``";
 }
+
+void AsciidocGenerator::startEmphasis()
+{
+AD_GEN_C
+  if (!m_denseText) t << "__";
+}
+void AsciidocGenerator::endEmphasis()
+{
+AD_GEN_C
+  if (!m_denseText) t << "__" << endl;
+}
+
 void AsciidocGenerator::startTextBlock(bool dense)
 {
 AD_GEN_C
@@ -819,8 +962,16 @@ AD_GEN_C
     t << "</programlisting>";
   }
 }
-void AsciidocGenerator::startMemberDoc(const char *clname, const char *memname, const char *anchor, const char *title,
-                                      int memCount, int memTotal, bool showInline)
+
+void AsciidocGenerator::lastIndexPage()
+{
+AD_GEN_C
+}
+
+void AsciidocGenerator::startMemberDoc(const char *clname, const char *memname,
+				       const char *anchor, const char *title,
+				       int memCount, int memTotal,
+				       bool showInline)
 {
 AD_GEN_C2("m_inLevel " << m_inLevel)
   t << "==== " << convertToAsciidoc(title) << endl;
@@ -854,6 +1005,80 @@ AD_GEN_C
   t << endl;
   if (name) addIndexTerm(t, name);
 }
+
+void AsciidocGenerator::startIndexListItem()
+{
+AD_GEN_C
+}
+
+void AsciidocGenerator::endIndexListItem()
+{
+AD_GEN_C
+  t << endl;
+}
+
+void AsciidocGenerator::startIndexList()
+{
+AD_GEN_C
+}
+
+void AsciidocGenerator::endIndexList()
+{
+AD_GEN_C
+}
+
+void AsciidocGenerator::startIndexKey()
+{
+AD_GEN_C
+}
+
+void AsciidocGenerator::endIndexKey()
+{
+AD_GEN_C
+  t << ":: ";
+}
+
+void AsciidocGenerator::startIndexValue(bool)
+{
+AD_GEN_C
+}
+
+void AsciidocGenerator::endIndexValue(const char *,bool)
+{
+AD_GEN_C
+  t << endl;
+}
+
+void AsciidocGenerator::startItemList()
+{
+AD_GEN_C
+}
+
+void AsciidocGenerator::endItemList()
+{
+AD_GEN_C
+}
+
+void AsciidocGenerator::startIndexItem(const char *,const char *)
+{
+AD_GEN_C
+}
+
+void AsciidocGenerator::endIndexItem(const char *,const char *)
+{
+AD_GEN_C
+}
+
+void AsciidocGenerator::startItemListItem()
+{
+AD_GEN_C
+}
+
+void AsciidocGenerator::endItemListItem()
+{
+AD_GEN_C
+}
+
 void AsciidocGenerator::startDoxyAnchor(const char *fName,const char *manName,
                                  const char *anchor,const char *name,
                                  const char *args)
@@ -873,6 +1098,44 @@ void AsciidocGenerator::endDoxyAnchor(const char *fileName,const char *anchor)
 AD_GEN_C
     t << endl; // Needed
 }
+
+void AsciidocGenerator::writeStartAnnoItem(const char *,const char *,
+					   const char *,const char *)
+{
+AD_GEN_C
+}
+void AsciidocGenerator::writeEndAnnoItem(const char *name)
+{
+AD_GEN_C
+}
+
+void AsciidocGenerator::startMemberDescription(const char *,const char *, bool)
+{
+AD_GEN_C
+}
+void AsciidocGenerator::endMemberDescription()
+{
+AD_GEN_C
+}
+void AsciidocGenerator::writeInheritedSectionTitle(const char *id,
+						   const char *ref,
+						   const char *file,
+						   const char *anchor,
+						   const char *title,
+						   const char *name)
+{
+AD_GEN_C
+}
+void AsciidocGenerator::startMemberDeclaration()
+{
+AD_GEN_C
+}
+void AsciidocGenerator::endMemberDeclaration(const char *,const char *)
+{
+AD_GEN_C
+}
+
+
 void AsciidocGenerator::startMemberDocName(bool)
 {
 AD_GEN_C
@@ -882,11 +1145,30 @@ void AsciidocGenerator::endMemberDocName()
 {
 AD_GEN_C
 }
+
+void AsciidocGenerator::startParameterType(bool,const char *)
+{
+AD_GEN_C
+}
+void AsciidocGenerator::endParameterType()
+{
+AD_GEN_C
+}
+
+
 void AsciidocGenerator::startMemberGroupHeader(bool hasHeader)
 {
 AD_GEN_C
 }
 void AsciidocGenerator::endMemberGroupHeader()
+{
+AD_GEN_C
+}
+void AsciidocGenerator::startMemberGroupDocs()
+{
+AD_GEN_C
+}
+void AsciidocGenerator::endMemberGroupDocs()
 {
 AD_GEN_C
 }
@@ -901,6 +1183,27 @@ AD_GEN_C
   t << "ENDMEMBER";
   t << endl;
   t << endl;
+}
+void AsciidocGenerator::insertMemberAlign(bool)
+{
+AD_GEN_C
+}
+void AsciidocGenerator::insertMemberAlignLeft(int, bool)
+{
+AD_GEN_C
+}
+
+void AsciidocGenerator::startIndent()
+{
+AD_GEN_C
+}
+void AsciidocGenerator::endIndent()
+{
+AD_GEN_C
+}
+void AsciidocGenerator::writeSynopsis()
+{
+AD_GEN_C
 }
 void AsciidocGenerator::startClassDiagram()
 {
@@ -932,6 +1235,15 @@ void  AsciidocGenerator::endLabels()
 AD_GEN_C
   t << endl;
 }
+void AsciidocGenerator::setCurrentDoc(Definition *,const char *,bool)
+{
+AD_GEN_C
+}
+void AsciidocGenerator::addWord(const char *,bool)
+{
+AD_GEN_C
+}
+
 void AsciidocGenerator::startExamples()
 {
 AD_GEN_C
@@ -944,6 +1256,41 @@ void AsciidocGenerator::endExamples()
 AD_GEN_C
   t << endl;
 }
+
+void AsciidocGenerator::startParamList(BaseOutputDocInterface::ParamListTypes,
+				       const char *)
+{
+AD_GEN_C
+}
+void AsciidocGenerator::endParamList()
+{
+AD_GEN_C
+}
+void AsciidocGenerator::startTitle()
+{
+AD_GEN_C
+}
+void AsciidocGenerator::endTitle()
+{
+AD_GEN_C
+}
+
+void AsciidocGenerator::startSubsection(void)
+{
+AD_GEN_C
+  t << "== ";
+}
+void AsciidocGenerator::endSubsection(void)
+{
+AD_GEN_C
+  t << endl;
+}
+void AsciidocGenerator::writeAnchor(const char *,const char *)
+{
+AD_GEN_C
+  t << endl;
+}
+
 void AsciidocGenerator::startSubsubsection(void)
 {
 AD_GEN_C
@@ -954,6 +1301,7 @@ void AsciidocGenerator::endSubsubsection(void)
 AD_GEN_C
   t << endl;
 }
+
 void AsciidocGenerator::writeChar(char c)
 {
 AD_GEN_C
@@ -1073,11 +1421,31 @@ void AsciidocGenerator::startDescTableData()
 AD_GEN_C
   t << "| ";
 }
-
 void AsciidocGenerator::endDescTableData()
 {
 AD_GEN_C
 }
+
+void AsciidocGenerator::startTextLink(const char *,const char *)
+{
+AD_GEN_C
+}
+void AsciidocGenerator::endTextLink()
+{
+AD_GEN_C
+}
+
+
+void AsciidocGenerator::startPageRef()
+{
+AD_GEN_C
+}
+
+void AsciidocGenerator::endPageRef(const char *,const char *)
+{
+AD_GEN_C
+}
+
 void AsciidocGenerator::startGroupCollaboration()
 {
 AD_GEN_C
@@ -1133,6 +1501,58 @@ AD_GEN_C
   g.writeGraph(t,GOF_BITMAP,EOF_Asciidoc,Config_getString(ASCIIDOC_OUTPUT), fileName,relPath,FALSE);
   t << endl;
 }
+void AsciidocGenerator::writeGraphicalHierarchy(const DotGfxHierarchyTable &)
+{
+AD_GEN_C
+}
+
+void AsciidocGenerator::startQuickIndices()
+{
+AD_GEN_C
+}
+void AsciidocGenerator::endQuickIndices()
+{
+AD_GEN_C
+}
+
+void AsciidocGenerator::writeSplitBar(const char *)
+{
+AD_GEN_C
+}
+void AsciidocGenerator::writeNavigationPath(const char *)
+{
+AD_GEN_C
+}
+void AsciidocGenerator::writeLogo()
+{
+AD_GEN_C
+}
+void AsciidocGenerator::writeQuickLinks(bool,HighlightedItem,const char *)
+{
+AD_GEN_C
+}
+void AsciidocGenerator::writeSummaryLink(const char *,const char *,
+					 const char *,bool)
+{
+AD_GEN_C
+}
+void AsciidocGenerator::startContents()
+{
+AD_GEN_C
+}
+void AsciidocGenerator::endContents()
+{
+AD_GEN_C
+}
+void AsciidocGenerator::startPageDoc(const char *)
+{
+AD_GEN_C
+}
+void AsciidocGenerator::endPageDoc()
+{
+AD_GEN_C
+}
+
 void AsciidocGenerator::startMemberDocList()
 {
 AD_GEN_C
@@ -1178,6 +1598,39 @@ void AsciidocGenerator::endConstraintDocs()
 AD_GEN_C
 }
 void AsciidocGenerator::endConstraintList()
+{
+AD_GEN_C
+}
+
+void AsciidocGenerator::startMemberDocSimple(bool)
+{
+AD_GEN_C
+}
+void AsciidocGenerator::endMemberDocSimple(bool)
+{
+AD_GEN_C
+}
+void AsciidocGenerator::startInlineMemberType()
+{
+AD_GEN_C
+}
+void AsciidocGenerator::endInlineMemberType()
+{
+AD_GEN_C
+}
+void AsciidocGenerator::startInlineMemberName()
+{
+AD_GEN_C
+}
+void AsciidocGenerator::endInlineMemberName()
+{
+AD_GEN_C
+}
+void AsciidocGenerator::startInlineMemberDoc()
+{
+AD_GEN_C
+}
+void AsciidocGenerator::endInlineMemberDoc()
 {
 AD_GEN_C
 }
