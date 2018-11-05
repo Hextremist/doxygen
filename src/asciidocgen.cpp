@@ -346,6 +346,7 @@ AD_GEN_C
   m_descTable = FALSE;
   m_inLevel = -1;
   m_firstMember = FALSE;
+  m_pageref = FALSE;
   for (int i = 0 ; i < sizeof(m_inListItem) / sizeof(*m_inListItem) ; i++) m_inListItem[i] = FALSE;
   for (int i = 0 ; i < sizeof(m_inSimpleSect) / sizeof(*m_inSimpleSect) ; i++) m_inSimpleSect[i] = FALSE;
 }
@@ -393,7 +394,7 @@ AD_GEN_C
   m_codeGen.setRelativePath(relPath);
   m_codeGen.setSourceFileName(stripPath(fileName));
 
-  if (!pageName.isEmpty()) t << "[[_" <<  stripPath(pageName) << "]]" << endl;
+  if (!pageName.isEmpty()) t << "[[" <<  stripPath(pageName) << "]]" << endl;
 }
 
 void AsciidocGenerator::writeSearchInfo()
@@ -732,20 +733,22 @@ AD_GEN_C
 void AsciidocGenerator::docify(const char *str)
 {
 AD_GEN_C
+  if (m_pageref) return;
   t << convertToAsciidoc(str);
 }
-void AsciidocGenerator::writeObjectLink(const char *ref, const char *f,
+void AsciidocGenerator::writeObjectLink(const char *ref, const char *file,
 					const char *anchor, const char *text)
 {
-    printf ("Her\n");
 AD_GEN_C
   if (anchor)
   {
-    t << "<<_" << anchor;
-    if (f) t << stripPath(f) << "_1";
+    t << "<<" << anchor;
+    if (file) t << stripPath(file) << "1";
   }
   else
-    t << "<<_" << stripPath(f);
+  {
+    t << "<<" << stripPath(file);
+  }
   t << ',';
   docify(text);
   t << ">>";
@@ -941,7 +944,7 @@ AD_GEN_C
 void AsciidocGenerator::endEmphasis()
 {
 AD_GEN_C
-  if (!m_denseText) t << "__" << endl;
+  if (!m_denseText) t << "__";
 }
 
 void AsciidocGenerator::startTextBlock(bool dense)
@@ -974,20 +977,18 @@ void AsciidocGenerator::startMemberDoc(const char *clname, const char *memname,
 				       bool showInline)
 {
 AD_GEN_C2("m_inLevel " << m_inLevel)
-  t << "==== " << convertToAsciidoc(title) << endl;
+  t << "==== " << convertToAsciidoc(title) << endl
+    << endl;
   if (memTotal>1)
   {
-    t << "[source]" << endl;
-    t << "----" << endl;
-    t << memCount << "/" << memTotal << "]";
-    t << "----" << endl;
+    t << "[.small]#[" << memCount << "/" << memTotal << "]#" << endl;
   }
-  t << endl;
   if (memname && memname[0]!='@')
   {
     addIndexTerm(t,memname,clname);
     addIndexTerm(t,clname,memname);
   }
+  t << "``";
 }
 void AsciidocGenerator::endMemberDoc(bool)
 {
@@ -1090,7 +1091,7 @@ AD_GEN_C
   }
   if (anchor)
   {
-      t << "[[_" << anchor << stripPath(fName) << "_1" << "]]" << endl;
+      t << "[[" << anchor << stripPath(fName) << "1" << "]]" << endl;
   }
 }
 void AsciidocGenerator::endDoxyAnchor(const char *fileName,const char *anchor)
@@ -1139,7 +1140,6 @@ AD_GEN_C
 void AsciidocGenerator::startMemberDocName(bool)
 {
 AD_GEN_C
-  t << "``";
 }
 void AsciidocGenerator::endMemberDocName()
 {
@@ -1227,13 +1227,12 @@ void  AsciidocGenerator::writeLabel(const char *l,bool isLast)
 {
 AD_GEN_C
   t << " [.small]#" << l << "#";
-  if (!isLast) t << ", ";
+  if (!isLast) t << ",";
 }
 
 void  AsciidocGenerator::endLabels()
 {
 AD_GEN_C
-  t << endl;
 }
 void AsciidocGenerator::setCurrentDoc(Definition *,const char *,bool)
 {
@@ -1313,7 +1312,6 @@ AD_GEN_C
 void AsciidocGenerator::startMemberDocPrefixItem()
 {
 AD_GEN_C
-  t << "[source]" << endl;
 }
 void AsciidocGenerator::endMemberDocPrefixItem()
 {
@@ -1332,7 +1330,6 @@ AD_GEN_C
 void AsciidocGenerator::startParameterName(bool)
 {
 AD_GEN_C
-  t << " ";
 }
 void AsciidocGenerator::endParameterName(bool last,bool /*emptyList*/,bool closeBracket)
 {
@@ -1366,7 +1363,7 @@ AD_GEN_C
 void AsciidocGenerator::startSection(const char *lab,const char *,SectionInfo::SectionType type)
 {
 AD_GEN_C
-  t << "[[_" << stripPath(lab) << "]] ";
+  t << "[[" << stripPath(lab) << "]] ";
 }
 void AsciidocGenerator::endSection(const char *lab,SectionInfo::SectionType)
 {
@@ -1439,11 +1436,13 @@ AD_GEN_C
 void AsciidocGenerator::startPageRef()
 {
 AD_GEN_C
+    m_pageref = TRUE;
 }
 
 void AsciidocGenerator::endPageRef(const char *,const char *)
 {
 AD_GEN_C
+    m_pageref = FALSE;
 }
 
 void AsciidocGenerator::startGroupCollaboration()

@@ -6164,38 +6164,44 @@ QCString convertToHtml(const char *s,bool keepEntities)
 /*! Converts a string to an Asciidoc-encoded string */
 QCString convertToAsciidoc(const char *s)
 {
-#warning Fix conversion
   static GrowBuf growBuf;
   if (s==0) return "";
   growBuf.clear();
-  const unsigned char *q;
   int cnt;
-  const char *p = s;
-  bool clean = true;
+  const char *p;
+  const char *q = NULL;
 
-  for (p = s; *p; ++p)
+  for (p = s; *p && !q; ++p)
   {
-      switch (*s)
+      switch (*p)
       {
       case '*':
       case '_':
       case '#':
       case '`':
-	  clean = false;
+      case '<':
+      case '>':
+      case '=':
+	  q = p;
 	  break;
       default:
 	  break;
       }
   }
-  if (clean)
+  if (q)
   {
-    growBuf.addStr(s);
-  }
-  else
-  {
+    while (s < q)
+    {
+      growBuf.addChar(*s++);
+    }
+    //growBuf.addChar('\0');
     growBuf.addStr("pass:c[");
     growBuf.addStr(s);
     growBuf.addStr("]");
+  }
+  else
+  {
+    growBuf.addStr(s);
   }
   return growBuf.get();
 }

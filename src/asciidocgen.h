@@ -359,6 +359,7 @@ private:
     bool m_descTable;
     int m_inLevel;
     bool m_firstMember;
+    bool m_pageref;
 };
 
 #endif

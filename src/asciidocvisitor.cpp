@@ -87,7 +87,7 @@ AD_VIS_C
 AsciidocDocVisitor::~AsciidocDocVisitor()
 {
 AD_VIS_C
-  m_t << endl;
+//  m_t << endl;
 }
 
 //--------------------------------------
@@ -535,19 +535,18 @@ void AsciidocDocVisitor::visitPost(DocPara *)
 {
 AD_VIS_C
   if (m_hide) return;
-  m_t << endl;
+m_t << endl; // Needed
 }
 
 void AsciidocDocVisitor::visitPre(DocRoot *)
 {
 AD_VIS_C
-  //m_t << "<hr><h4><font color=\"red\">New parser:</font></h4>\n";
 }
 
 void AsciidocDocVisitor::visitPost(DocRoot *)
 {
 AD_VIS_C
-  //m_t << "<hr><h4><font color=\"red\">Old parser:</font></h4>\n";
+  m_t << endl;
 }
 
 void AsciidocDocVisitor::visitPre(DocSimpleSect *s)
@@ -559,134 +558,134 @@ AD_VIS_C
     case DocSimpleSect::See:
       if (m_insidePre) 
       {
-        m_t << "==== " << theTranslator->trSeeAlso() << ":" << endl;
+	m_t << endl <<endl <<"==== " << theTranslator->trSeeAlso() << endl;
       } 
       else 
       {
-        m_t << "==== " << convertToAsciidoc(theTranslator->trSeeAlso()) << ":" << endl;
+        m_t << endl <<endl <<"==== " << convertToAsciidoc(theTranslator->trSeeAlso()) << endl;
       }
       break;
     case DocSimpleSect::Return:
       if (m_insidePre) 
       {
-        m_t << "==== " << theTranslator->trReturns()<< ":" << endl;
+        m_t << endl <<endl <<"==== " << theTranslator->trReturns() << endl;
       } 
       else 
       {
-        m_t << "==== " << convertToAsciidoc(theTranslator->trReturns()) << ":" << endl;
+        m_t << endl <<endl <<"==== " << convertToAsciidoc(theTranslator->trReturns()) << endl;
       }
       break;
     case DocSimpleSect::Author:
       if (m_insidePre) 
       {
-        m_t << "==== " << theTranslator->trAuthor(TRUE, TRUE) << ":" << endl;
+        m_t << endl <<endl <<"==== " << theTranslator->trAuthor(TRUE, TRUE) << endl;
       } 
       else 
       {
-        m_t << "==== " << convertToAsciidoc(theTranslator->trAuthor(TRUE, TRUE)) << ":" << endl;
+        m_t << endl <<endl <<"==== " << convertToAsciidoc(theTranslator->trAuthor(TRUE, TRUE)) << endl;
       }
       break;
     case DocSimpleSect::Authors:
       if (m_insidePre) 
       {
-        m_t << "==== " << theTranslator->trAuthor(TRUE, FALSE) << ":" << endl;
+        m_t << endl <<endl <<"==== " << theTranslator->trAuthor(TRUE, FALSE) << endl;
       } 
       else 
       {
-        m_t << "==== " << convertToAsciidoc(theTranslator->trAuthor(TRUE, FALSE)) << ":" << endl;
+        m_t << endl <<endl <<"==== " << convertToAsciidoc(theTranslator->trAuthor(TRUE, FALSE)) << endl;
       }
       break;
     case DocSimpleSect::Version:
-      if (m_insidePre) 
+      if (m_insidePre)
       {
-        m_t << "==== " << theTranslator->trVersion() << ":" << endl;
+        m_t << endl <<endl <<"==== " << theTranslator->trVersion() << endl;
       } 
       else 
       {
-        m_t << "==== " << convertToAsciidoc(theTranslator->trVersion()) << ":" << endl;
+        m_t << endl <<endl <<"==== " << convertToAsciidoc(theTranslator->trVersion()) << endl;
       }
       break;
     case DocSimpleSect::Since:
       if (m_insidePre) 
       {
-        m_t << "==== " << theTranslator->trSince() << ":" << endl;
+        m_t << endl <<endl <<"==== " << theTranslator->trSince() << endl;
       } 
       else 
       {
-        m_t << "==== " << convertToAsciidoc(theTranslator->trSince()) << ":" << endl;
+        m_t << endl <<endl <<"==== " << convertToAsciidoc(theTranslator->trSince()) << endl;
       }
       break;
     case DocSimpleSect::Date:
       if (m_insidePre) 
       {
-        m_t << "==== " << theTranslator->trDate() << ":" << endl;
+        m_t << endl <<endl <<"==== " << theTranslator->trDate() << endl;
       } 
       else 
       {
-        m_t << "==== " << convertToAsciidoc(theTranslator->trDate()) << ":" << endl;
+        m_t << endl <<endl <<"==== " << convertToAsciidoc(theTranslator->trDate()) << endl;
       }
       break;
     case DocSimpleSect::Note:
       // if (m_insidePre) 
-      m_t << "[NOTE]" << endl;
+      m_t << endl <<endl <<"[NOTE]" << endl;
       m_t << "====" << endl;
       break;
     case DocSimpleSect::Warning:
-      m_t << "[WARNING]" << endl;
+      m_t << endl <<endl <<"[WARNING]" << endl;
       m_t << "====" << endl;
       break;
     case DocSimpleSect::Pre:
       if (m_insidePre) 
       {
-        m_t << "==== " << theTranslator->trPrecondition() << ":" << endl;
+        m_t << endl <<endl <<"==== " << theTranslator->trPrecondition() << endl;
       } 
       else 
       {
-        m_t << "==== " << convertToAsciidoc(theTranslator->trPrecondition()) << ":" << endl;
+        m_t << endl <<endl <<"==== " << convertToAsciidoc(theTranslator->trPrecondition()) << endl;
       }
       break;
     case DocSimpleSect::Post:
       if (m_insidePre) 
       {
-        m_t << "==== " << theTranslator->trPostcondition() << ":" << endl;
+        m_t << endl <<endl <<"==== " << theTranslator->trPostcondition() << endl;
       } 
       else 
       {
-        m_t << "==== " << convertToAsciidoc(theTranslator->trPostcondition()) << ":" << endl;
+        m_t << endl <<endl <<"==== " << convertToAsciidoc(theTranslator->trPostcondition()) << endl;
       }
       break;
     case DocSimpleSect::Copyright:
       if (m_insidePre) 
       {
-        m_t << "==== " << theTranslator->trCopyright() << ":" << endl;
+        m_t << endl <<endl <<"==== " << theTranslator->trCopyright() << endl;
       } 
       else 
       {
-        m_t << "==== " << convertToAsciidoc(theTranslator->trCopyright()) << ":" << endl;
+        m_t << endl <<endl <<"==== " << convertToAsciidoc(theTranslator->trCopyright()) << endl;
       }
       break;
     case DocSimpleSect::Invar:
       if (m_insidePre) 
       {
-        m_t << "==== " << theTranslator->trInvariant() << ":" << endl;
+        m_t << endl <<endl <<"==== " << theTranslator->trInvariant() << endl;
       } 
       else 
       {
-        m_t << "==== " << convertToAsciidoc(theTranslator->trInvariant()) << ":" << endl;
+        m_t << endl <<endl <<"==== " << convertToAsciidoc(theTranslator->trInvariant()) << endl;
       }
       break;
     case DocSimpleSect::Remark:
       if (m_insidePre) 
       {
-        m_t << "==== " << theTranslator->trRemarks() << ":" << endl;
+        m_t << endl <<endl <<"==== " << theTranslator->trRemarks() << endl;
       } 
       else 
       {
-        m_t << "==== " << convertToAsciidoc(theTranslator->trRemarks()) << ":" << endl;
+        m_t << endl <<endl <<"==== " << convertToAsciidoc(theTranslator->trRemarks()) << endl;
       }
       break;
     case DocSimpleSect::Attention:
-      m_t << "[CAUTION]" << endl;
+      m_t << endl <<endl <<"[CAUTION]" << endl;
       m_t << "===" << endl;
       break;
     case DocSimpleSect::User:
@@ -704,10 +703,8 @@ AD_VIS_C
   {
     case DocSimpleSect::Rcs:
     case DocSimpleSect::Unknown:
-	m_t << endl;
-      break;
     case DocSimpleSect::User:
-	m_t << endl;
+      m_t << endl;
       break;
     case DocSimpleSect::Note:
     case DocSimpleSect::Attention:
@@ -1343,7 +1340,6 @@ void AsciidocDocVisitor::visitPost(DocParamList *)
 {
 AD_VIS_C
   if (m_hide) return;
-  m_t << endl;
 }
 
 void AsciidocDocVisitor::visitPre(DocXRefItem *x)
@@ -1351,8 +1347,8 @@ void AsciidocDocVisitor::visitPre(DocXRefItem *x)
 AD_VIS_C
   if (m_hide) return;
   if (x->title().isEmpty()) return;
-  m_t << "[[_";
-  m_t << stripPath(x->file()) << "_1" << x->anchor();
+  m_t << "[[";
+  m_t << stripPath(x->file()) << "1" << x->anchor();
   m_t << ",";
   filter(x->title());
   m_t << "]]";
@@ -1460,12 +1456,16 @@ AD_VIS_C
 void AsciidocDocVisitor::startLink(const QCString &file,const QCString &anchor)
 {
 AD_VIS_C
-    m_t << "<<_" << stripPath(file);
   if (!anchor.isEmpty())
   {
-    if (file) m_t << "_1";
-    m_t << anchor;
+    m_t << "<<" << anchor;
+    if (file) m_t << stripPath(file) << "1";
   }
+  else
+  {
+    m_t << stripPath(file);
+  }
+
   m_t << ",";
 }
 
