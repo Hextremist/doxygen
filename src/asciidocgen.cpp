@@ -296,13 +296,14 @@ void AsciidocCodeGenerator::finish()
 
 void AsciidocCodeGenerator::startCodeFragment(SrcLangExt lang)
 {
-  m_t << "[source]" << endl;
-  m_t << "----" << endl;
+  m_t << endl
+      << "[source]" << endl
+      << "----" << endl;
 }
 void AsciidocCodeGenerator::endCodeFragment()
 {
-  m_t << "----" << endl;
-  m_t << endl;
+  m_t << "----" << endl
+      << endl;
 }
 
 void writeAsciidocCodeBlock(FTextStream &t,FileDef *fd)
@@ -423,7 +424,8 @@ AD_GEN_C2("IndexSections " << is)
       t << "= " << convertToAsciidoc(Config_getString(PROJECT_NAME)) << ": "
 	<< convertToAsciidoc(Config_getString(PROJECT_BRIEF)) << endl
 	<< ":toc: left" << endl
-	<< endl
+        << ":source-highlighter: coderay" << endl
+        << endl
 	<< "== Introduction" << endl;
       break;
     case isTitlePageAuthor:
@@ -923,7 +925,12 @@ AD_GEN_C
 void AsciidocGenerator::lineBreak(const char *)
 {
 AD_GEN_C
-  t << " +" << endl;
+  if (m_denseText) t << " +" << endl;
+  else
+  {
+    t << endl
+      << endl;
+  }
 }
 
 void AsciidocGenerator::startTypewriter()
@@ -1344,7 +1351,12 @@ AD_GEN_C
 void AsciidocGenerator::startCodeFragment(SrcLangExt lang)
 {
 AD_GEN_C
-  t << "[source]" << endl;
+  static const char *langnames[] = {
+    "", "idl", "java", "c#", "d", "php", "objc", "c++", "js", "python",
+    "fortran", "vhdl", "xml", "tcl", "markdown", "sql"
+  };
+  t << lang << endl;
+  t << endl << "[source,c++,numbered]" << endl;
   t << "----" << endl;
 }
 void AsciidocGenerator::endCodeFragment()
