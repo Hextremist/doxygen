@@ -427,6 +427,7 @@ AD_GEN_C2("IndexSections " << is)
 	<< "== Introduction" << endl;
       break;
     case isTitlePageAuthor:
+      t << "[discrete]" << endl;
       t << "=== ";
       break;
     case isMainPage:
