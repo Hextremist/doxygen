@@ -687,7 +687,7 @@ AD_GEN_C
 void AsciidocGenerator::writeDoc(DocNode *n,Definition *ctx,MemberDef *)
 {
 AD_GEN_C
-    AsciidocDocVisitor *visitor = new AsciidocDocVisitor(t,*this,ctx);
+  AsciidocDocVisitor *visitor = new AsciidocDocVisitor(t,*this,ctx);
   n->accept(visitor);
   delete visitor;
 }
@@ -923,7 +923,7 @@ AD_GEN_C
 void AsciidocGenerator::lineBreak(const char *)
 {
 AD_GEN_C
-  t << endl;
+  t << " +" << endl;
 }
 
 void AsciidocGenerator::startTypewriter()
@@ -954,7 +954,7 @@ AD_GEN_C
   if (dense)
   {
     m_denseText = TRUE;
-    t << "<programlisting>";
+    t << "``";
   }
 }
 void AsciidocGenerator::endTextBlock(bool dense)
@@ -963,7 +963,8 @@ AD_GEN_C
   if (m_denseText)
   {
     m_denseText = FALSE;
-    t << "</programlisting>";
+    t << "``" << endl
+      << endl;
   }
 }
 
@@ -1482,6 +1483,7 @@ AD_GEN_C
 void AsciidocGenerator::startCallGraph()
 {
 AD_GEN_C
+  t << endl;
 }
 void AsciidocGenerator::endCallGraph(const DotCallGraph &g)
 {
