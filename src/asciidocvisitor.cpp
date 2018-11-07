@@ -1248,7 +1248,7 @@ AD_VIS_C
       ASSERT(0);
   }
   m_t << endl;
-  m_t << endl;
+  m_t << "[horizontal]" << endl;
 }
 
 void AsciidocDocVisitor::visitPost(DocParamSect *)
