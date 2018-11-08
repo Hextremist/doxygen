@@ -2657,6 +2657,7 @@ void ClassDefImpl::addClassAttributes(OutputList &ol) const
 
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
+  // ol.enable(OutputGenerator::Asciidoc);
   if (sl.count()>0)
   {
     ol.startLabels();

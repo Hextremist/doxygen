@@ -1404,7 +1404,8 @@ AD_VIS_C
 void AsciidocDocVisitor::visitPost(DocText *)
 {
 AD_VIS_C
-  m_t << endl;
+  m_t << endl
+      << endl;
 }
 
 

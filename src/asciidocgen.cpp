@@ -424,6 +424,7 @@ AD_GEN_C2("IndexSections " << is)
       t << "= " << convertToAsciidoc(Config_getString(PROJECT_NAME)) << ": "
 	<< convertToAsciidoc(Config_getString(PROJECT_BRIEF)) << endl
 	<< ":toc: left" << endl
+	<< ":experimental:" << endl
         << ":source-highlighter: coderay" << endl
         << endl
 	<< "== Introduction" << endl;
@@ -1048,9 +1049,10 @@ AD_GEN_C
   t << ":: ";
 }
 
-void AsciidocGenerator::startIndexValue(bool)
+void AsciidocGenerator::startIndexValue(bool have)
 {
 AD_GEN_C
+  if (!have) t << "[.small]#N/A#" << endl;
 }
 
 void AsciidocGenerator::endIndexValue(const char *,bool)
@@ -1532,6 +1534,7 @@ AD_GEN_C
 void AsciidocGenerator::writeSplitBar(const char *)
 {
 AD_GEN_C
+  //t << "{hruler}" << endl;
 }
 void AsciidocGenerator::writeNavigationPath(const char *)
 {
