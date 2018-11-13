@@ -174,7 +174,7 @@ AD_VIS_C
       if (s->enable()) m_t << "__";     else m_t << "__";
       break;
     case DocStyleChange::Code:
-      if (s->enable()) m_t << "[source]" << endl; else m_t << endl;
+      if (s->enable()) m_t << "``"; else m_t << "``";
       break;
     case DocStyleChange::Subscript:
       if (s->enable()) m_t << "~";    else m_t << "~";
@@ -315,7 +315,7 @@ void AsciidocDocVisitor::visit(DocAnchor *anc)
 {
 AD_VIS_C
   if (m_hide) return;
-  m_t << "<anchor xml:id=\"_" <<  stripPath(anc->file()) << "_1" << anc->anchor() << "\"/>";
+  m_t << "<<" << anc->anchor() << stripPath(anc->file()) << "1" << ",";
 }
 
 void AsciidocDocVisitor::visit(DocInclude *inc)
@@ -507,14 +507,14 @@ void AsciidocDocVisitor::visitPre(DocAutoListItem *i)
 {
 AD_VIS_C
   if (m_hide) return;
-  DocAutoList* l = dynamic_cast<DocAutoList*>(l->parent());
+  DocAutoList* l = dynamic_cast<DocAutoList*>(i->parent());
   if (l && l->isEnumList())
   {
     m_t << ". ";
   }
   else
   {
-    m_t << "*10 ";
+    m_t << "* ";
   }
 }
 
@@ -535,7 +535,7 @@ void AsciidocDocVisitor::visitPost(DocPara *)
 {
 AD_VIS_C
   if (m_hide) return;
-m_t << endl; // Needed
+  m_t << endl; // Needed
 }
 
 void AsciidocDocVisitor::visitPre(DocRoot *)
@@ -721,7 +721,7 @@ void AsciidocDocVisitor::visitPre(DocTitle *t)
 {
 AD_VIS_C
   if (m_hide) return;
-  if (t->hasTitle()) m_t << "==== ";
+  if (t->hasTitle()) m_t << endl << "==== ";
 }
 
 void AsciidocDocVisitor::visitPost(DocTitle *t)
@@ -813,14 +813,13 @@ void AsciidocDocVisitor::visitPre(DocHtmlDescList *)
 {
 AD_VIS_C
   if (m_hide) return;
-  m_t << "<variablelist>\n";
 }
 
 void AsciidocDocVisitor::visitPost(DocHtmlDescList *)
 {
 AD_VIS_C
   if (m_hide) return;
-  m_t << "\n";
+  m_t << endl;
 }
 
 void AsciidocDocVisitor::visitPre(DocHtmlDescTitle *)
@@ -840,14 +839,13 @@ void AsciidocDocVisitor::visitPre(DocHtmlDescData *)
 {
 AD_VIS_C
   if (m_hide) return;
-  m_t << "*13 ";
 }
 
 void AsciidocDocVisitor::visitPost(DocHtmlDescData *)
 {
 AD_VIS_C
   if (m_hide) return;
-  m_t << "\n";
+  m_t << endl;
 }
 
 static int colCnt = 0;
@@ -857,13 +855,7 @@ void AsciidocDocVisitor::visitPre(DocHtmlTable *t)
 AD_VIS_C
   bodySet = FALSE;
   if (m_hide) return;
-  m_t << "<informaltable frame=\"all\">" << endl;
-  m_t << "<tgroup cols=\"" << t->numColumns() << "\" align=\"left\" colsep=\"1\" rowsep=\"1\">" << endl;
-  for (int i = 0; i <t->numColumns(); i++)
-  {
-    // do something with colwidth based of cell width specification (be aware of possible colspan in the header)?
-    m_t << "<colspec colname='c" << i+1 << "'/>\n";
-  }
+  m_t << endl << "|===" << endl;
 }
 
 void AsciidocDocVisitor::visitPost(DocHtmlTable *)
@@ -880,52 +872,50 @@ AD_VIS_C
   colCnt = 0;
   if (m_hide) return;
 
-  if (tr->isHeading()) m_t << "<thead>\n";
+  if (tr->isHeading()) m_t << "| ";
   else if (!bodySet)
   {
     bodySet = TRUE;
-    m_t << "<tbody>\n";
+    m_t << "| ";
   }
 
-  m_t << "<row ";
-
-  HtmlAttribListIterator li(tr->attribs());
-  HtmlAttrib *opt;
-  for (li.toFirst();(opt=li.current());++li)
-  {
-    if (opt->name=="class")
-    {
-      // just skip it
-    }
-    else if (opt->name=="style")
-    {
-      // just skip it
-    }
-    else if (opt->name=="height")
-    {
-      // just skip it
-    }
-    else if (opt->name=="filter")
-    {
-      // just skip it
-    }
-    else
-    {
-      m_t << " " << opt->name << "='" << opt->value << "'";
-    }
-  }
-  m_t << ">\n";
+  // HtmlAttribListIterator li(tr->attribs());
+  // HtmlAttrib *opt;
+  // for (li.toFirst();(opt=li.current());++li)
+  // {
+  //   if (opt->name=="class")
+  //   {
+  //     // just skip it
+  //   }
+  //   else if (opt->name=="style")
+  //   {
+  //     // just skip it
+  //   }
+  //   else if (opt->name=="height")
+  //   {
+  //     // just skip it
+  //   }
+  //   else if (opt->name=="filter")
+  //   {
+  //     // just skip it
+  //   }
+  //   else
+  //   {
+  //     m_t << " " << opt->name << "='" << opt->value << "'";
+  //   }
+  // }
+  // m_t << ">\n";
 }
 
 void AsciidocDocVisitor::visitPost(DocHtmlRow *tr)
 {
 AD_VIS_C
   if (m_hide) return;
-  m_t << "</row>\n";
+  m_t << endl;
   if (tr->isHeading())
   {
     bodySet = TRUE;
-    m_t << "\n";
+    m_t << endl;
   }
 }
 
@@ -934,76 +924,76 @@ void AsciidocDocVisitor::visitPre(DocHtmlCell *c)
 AD_VIS_C
   colCnt++;
   if (m_hide) return;
-  m_t << "<entry";
+  m_t << "|";
 
-  HtmlAttribListIterator li(c->attribs());
-  HtmlAttrib *opt;
-  for (li.toFirst();(opt=li.current());++li)
-  {
-    if (opt->name=="colspan")
-    {
-      m_t << " namest='c" << colCnt << "'";
-      int cols = opt->value.toInt();
-      colCnt += (cols - 1);
-      m_t << " nameend='c" << colCnt << "'";
-    }
-    else if (opt->name=="rowspan")
-    {
-      int extraRows = opt->value.toInt() - 1;
-      m_t << " morerows='" << extraRows << "'";
-    }
-    else if (opt->name=="class")
-    {
-      if (opt->value == "markdownTableBodyRight")
-      {
-        m_t << " align='right'";
-      }
-      else if (opt->value == "markdownTableBodyLeftt")
-      {
-        m_t << " align='left'";
-      }
-      else if (opt->value == "markdownTableBodyCenter")
-      {
-        m_t << " align='center'";
-      }
-      else if (opt->value == "markdownTableHeadRight")
-      {
-        m_t << " align='right'";
-      }
-      else if (opt->value == "markdownTableHeadLeftt")
-      {
-        m_t << " align='left'";
-      }
-      else if (opt->value == "markdownTableHeadCenter")
-      {
-        m_t << " align='center'";
-      }
-    }
-    else if (opt->name=="style")
-    {
-      // just skip it
-    }
-    else if (opt->name=="width")
-    {
-      // just skip it
-    }
-    else if (opt->name=="height")
-    {
-      // just skip it
-    }
-    else
-    {
-      m_t << " " << opt->name << "='" << opt->value << "'";
-    }
-  }
-  m_t << ">";
+  // HtmlAttribListIterator li(c->attribs());
+  // HtmlAttrib *opt;
+  // for (li.toFirst();(opt=li.current());++li)
+  // {
+  //   if (opt->name=="colspan")
+  //   {
+  //     m_t << " namest='c" << colCnt << "'";
+  //     int cols = opt->value.toInt();
+  //     colCnt += (cols - 1);
+  //     m_t << " nameend='c" << colCnt << "'";
+  //   }
+  //   else if (opt->name=="rowspan")
+  //   {
+  //     int extraRows = opt->value.toInt() - 1;
+  //     m_t << " morerows='" << extraRows << "'";
+  //   }
+  //   else if (opt->name=="class")
+  //   {
+  //     if (opt->value == "markdownTableBodyRight")
+  //     {
+  //       m_t << " align='right'";
+  //     }
+  //     else if (opt->value == "markdownTableBodyLeftt")
+  //     {
+  //       m_t << " align='left'";
+  //     }
+  //     else if (opt->value == "markdownTableBodyCenter")
+  //     {
+  //       m_t << " align='center'";
+  //     }
+  //     else if (opt->value == "markdownTableHeadRight")
+  //     {
+  //       m_t << " align='right'";
+  //     }
+  //     else if (opt->value == "markdownTableHeadLeftt")
+  //     {
+  //       m_t << " align='left'";
+  //     }
+  //     else if (opt->value == "markdownTableHeadCenter")
+  //     {
+  //       m_t << " align='center'";
+  //     }
+  //   }
+  //   else if (opt->name=="style")
+  //   {
+  //     // just skip it
+  //   }
+  //   else if (opt->name=="width")
+  //   {
+  //     // just skip it
+  //   }
+  //   else if (opt->name=="height")
+  //   {
+  //     // just skip it
+  //   }
+  //   else
+  //   {
+  //     m_t << " " << opt->name << "='" << opt->value << "'";
+  //   }
+  // }
+  // m_t << ">";
 }
 
 void AsciidocDocVisitor::visitPost(DocHtmlCell *c)
 {
 AD_VIS_C
   if (m_hide) return;
-  m_t << "</entry>";
+  m_t << endl;
 }
 
 void AsciidocDocVisitor::visitPre(DocHtmlCaption *c)
@@ -1457,9 +1447,10 @@ AD_VIS_C
 void AsciidocDocVisitor::startLink(const QCString &file,const QCString &anchor)
 {
 AD_VIS_C
+  m_t << "<<";
   if (!anchor.isEmpty())
   {
-    m_t << "<<" << anchor;
+    m_t << anchor;
     if (file) m_t << stripPath(file) << "1";
   }
   else

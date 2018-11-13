@@ -50,13 +50,6 @@
 #include "dirdef.h"
 #include "section.h"
 
-// no debug info
-#define Asciidoc_DB(x) do {} while(0)
-// debug to stdout
-//#define Asciidoc_DB(x) printf x
-// debug inside output
-//#define Asciidoc_DB(x) QCString __t;__t.sprintf x;m_t << __t
-
 #if 1
 #define BLUE    "\x1b[34m"
 #define RESET   "\x1b[0m"
@@ -64,6 +57,10 @@
 #define AD_GEN_C1(x) x << BLUE "AD_GEN_C " << __LINE__ << RESET;
 #define AD_GEN_C2(y) AD_GEN_C2a(t,y)
 #define AD_GEN_C2a(x,y) x << BLUE "AD_GEN_C " << __LINE__ << ":" << y << RESET;
+#define AD_VIS_C AD_VIS_C1(m_t)
+#define AD_VIS_C1(x) x << BLUE "AD_GEN_C " << __LINE__ << RESET;
+#define AD_VIS_C2(y) AD_VIS_C2a(m_t,y)
+#define AD_VIS_C2a(x,y) x << BLUE "AD_GEN_C " << __LINE__ << " " << y << RESET;
 #else
 #define AD_GEN_C
 #define AD_GEN_C1(x)
@@ -132,7 +129,7 @@ inline void writeAsciidocCodeString(FTextStream &t,const char *s, int &col)
           static int tabSize = Config_getInt(TAB_SIZE);
           int spacesToNextTabStop = tabSize - (col%tabSize);
           col+=spacesToNextTabStop;
-          while (spacesToNextTabStop--) t << "&#32;";
+          while (spacesToNextTabStop--) t << ' ';
           break;
         }
       case '\007':  t << "^G"; col++; break; // bell
@@ -198,13 +195,13 @@ AsciidocCodeGenerator::~AsciidocCodeGenerator() {}
 
 void AsciidocCodeGenerator::codify(const char *text)
 {
-  Asciidoc_DB(("(codify \"%s\")\n",text));
+  AD_VIS_C
   writeAsciidocCodeString(m_t,text,m_col);
 }
 void AsciidocCodeGenerator::writeCodeLink(const char *ref,const char *file,
     const char *anchor,const char *name, const char *tooltip)
 {
-  Asciidoc_DB(("(writeCodeLink)\n"));
+  AD_VIS_C
   writeAsciidocLink(m_t,ref,file,anchor,name,tooltip);
   m_col+=strlen(name);
 }
@@ -212,29 +209,29 @@ void AsciidocCodeGenerator::writeCodeLinkLine(const char *ref,const char *file,
     const char *anchor,const char *name,
     const char *tooltip)
 {
-  Asciidoc_DB(("(writeCodeLinkLine)\n"));
-  m_t << "<anchor xml:id=\"_" << stripExtensionGeneral(stripPath(file),".xml");
+  AD_VIS_C
+  m_t << "<<" << stripExtensionGeneral(stripPath(file),".xml");
   m_t << "_1l";
   writeAsciidocString(m_t,name);
-  m_t << "\"/>";
+  m_t << ">>";
   m_col+=strlen(name);
 }
 void AsciidocCodeGenerator::writeTooltip(const char *, const DocLinkInfo &, const char *,
                   const char *, const SourceLinkInfo &, const SourceLinkInfo &
                  )
 {
-  Asciidoc_DB(("(writeToolTip)\n"));
+  AD_VIS_C
 }
 void AsciidocCodeGenerator::startCodeLine(bool)
 {
-  Asciidoc_DB(("(startCodeLine)\n"));
+  AD_VIS_C
   m_insideCodeLine=TRUE;
   m_col=0;
 }
 void AsciidocCodeGenerator::endCodeLine()
 {
+  AD_VIS_C
   m_t << endl;
-  Asciidoc_DB(("(endCodeLine)\n"));
   m_lineNumber = -1;
   m_refId.resize(0);
   m_external.resize(0);
@@ -242,72 +239,55 @@ void AsciidocCodeGenerator::endCodeLine()
 }
 void AsciidocCodeGenerator::startFontClass(const char *colorClass)
 {
-  Asciidoc_DB(("(startFontClass)\n"));
-  m_t << "<emphasis role=\"" << colorClass << "\">";
+  AD_VIS_C
   m_insideSpecialHL=TRUE;
 }
 void AsciidocCodeGenerator::endFontClass()
 {
-  Asciidoc_DB(("(endFontClass)\n"));
-  m_t << "</emphasis>"; // non Asciidoc
+  AD_VIS_C
   m_insideSpecialHL=FALSE;
 }
 void AsciidocCodeGenerator::writeCodeAnchor(const char *)
 {
-  Asciidoc_DB(("(writeCodeAnchor)\n"));
+  AD_VIS_C
 }
 void AsciidocCodeGenerator::writeLineNumber(const char *ref,const char *fileName,
     const char *anchor,int l)
 {
-  Asciidoc_DB(("(writeLineNumber)\n"));
+  AD_VIS_C
   m_insideCodeLine = TRUE;
-  if (m_prettyCode)
-  {
-    QCString lineNumber;
-    lineNumber.sprintf("%05d",l);
-
-    if (fileName && !m_sourceFileName.isEmpty())
-    {
-      writeCodeLinkLine(ref,m_sourceFileName,anchor,lineNumber,0);
-      writeCodeLink(ref,fileName,anchor,lineNumber,0);
-    }
-    else
-    {
-      codify(lineNumber);
-    }
-    m_t << " ";
-  }
-  else
-  {
-    m_t << l << " ";
-  }
-
 }
 void AsciidocCodeGenerator::setCurrentDoc(Definition *,const char *,bool)
 {
+  AD_VIS_C
 }
 void AsciidocCodeGenerator::addWord(const char *,bool)
 {
+  AD_VIS_C
 }
 void AsciidocCodeGenerator::finish()
 {
+  AD_VIS_C
   if (m_insideCodeLine) endCodeLine();
 }
 
 void AsciidocCodeGenerator::startCodeFragment(SrcLangExt lang)
 {
+  AD_VIS_C
   m_t << endl
       << "[source]" << endl
       << "----" << endl;
 }
 void AsciidocCodeGenerator::endCodeFragment()
 {
+  AD_VIS_C
   m_t << "----" << endl
       << endl;
 }
 
 void writeAsciidocCodeBlock(FTextStream &t,FileDef *fd)
 {
+  AD_GEN_C
   ParserInterface *pIntf=Doxygen::parserManager->getParser(fd->getDefFileExtension());
   SrcLangExt langExt = getLanguageFromFileName(fd->getDefFileExtension());
   pIntf->resetCodeParserState();
@@ -1170,6 +1150,7 @@ AD_GEN_C
 void AsciidocGenerator::startMemberGroupHeader(bool hasHeader)
 {
 AD_GEN_C
+  t << "==== ";
 }
 void AsciidocGenerator::endMemberGroupHeader()
 {
@@ -1186,13 +1167,10 @@ AD_GEN_C
 void AsciidocGenerator::startMemberGroup()
 {
 AD_GEN_C
-    t << "STARTMEMBER\n";
 }
 void AsciidocGenerator::endMemberGroup(bool)
 {
 AD_GEN_C
-  t << "ENDMEMBER";
-  t << endl;
   t << endl;
 }
 void AsciidocGenerator::insertMemberAlign(bool)
@@ -1357,8 +1335,9 @@ AD_GEN_C
     "", "idl", "java", "c#", "d", "php", "objc", "c++", "js", "python",
     "fortran", "vhdl", "xml", "tcl", "markdown", "sql"
   };
+
   t << lang << endl;
-  t << endl << "[source,c++,numbered]" << endl;
+  t << endl << "[source,c++,linenums,+macros]" << endl;
   t << "----" << endl;
 }
 void AsciidocGenerator::endCodeFragment()
@@ -1437,6 +1416,7 @@ AD_GEN_C
 void AsciidocGenerator::endDescTableData()
 {
 AD_GEN_C
+  t << endl; // Needed
 }
 
 void AsciidocGenerator::startTextLink(const char *,const char *)
