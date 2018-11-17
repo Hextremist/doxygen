@@ -117,28 +117,6 @@ inline void writeAsciidocString(FTextStream &t,const char *s)
   t << convertToAsciidoc(s);
 }
 
-inline void writeAsciidocCodeString(FTextStream &t,const char *s, int &col)
-{
-  char c;
-  while ((c=*s++))
-  {
-    switch(c)
-    {
-      case '\t':
-        {
-          static int tabSize = Config_getInt(TAB_SIZE);
-          int spacesToNextTabStop = tabSize - (col%tabSize);
-          col+=spacesToNextTabStop;
-          while (spacesToNextTabStop--) t << ' ';
-          break;
-        }
-      case '\007':  t << "^G"; col++; break; // bell
-      case '\014':  t << "^L"; col++; break; // form feed
-      default:   t << c; col++;        break;
-    }
-  }
-}
-
 static void addIndexTerm(FTextStream &t, QCString prim, QCString sec = "")
 {
   // No indexterm support in asciidoc yet
@@ -149,7 +127,7 @@ static void writeInclude(FTextStream &t, const char *const filename)
     t << "include::" << filename << ".adoc[leveloffset=+1]" << endl;
 }
 
-void writeAsciidocLink(FTextStream &t,const char * /*extRef*/,const char *compoundId,
+static void writeAsciidocLink(FTextStream &t,const char * /*extRef*/,const char *compoundId,
     const char *anchorId,const char * text,const char * /*tooltip*/)
 {
   t << "<<" << stripPath(compoundId);
@@ -196,7 +174,24 @@ AsciidocCodeGenerator::~AsciidocCodeGenerator() {}
 void AsciidocCodeGenerator::codify(const char *text)
 {
   AD_VIS_C
-  writeAsciidocCodeString(m_t,text,m_col);
+  char c;
+  while ((c=*text++))
+  {
+    switch(c)
+    {
+      case '\t':
+        {
+          static int tabSize = Config_getInt(TAB_SIZE);
+          int spacesToNextTabStop = tabSize - (m_col%tabSize);
+          m_col+=spacesToNextTabStop;
+          while (spacesToNextTabStop--) m_t << ' ';
+          break;
+        }
+      case '\007':  m_t << "^G"; m_col++; break; // bell
+      case '\014':  m_t << "^L"; m_col++; break; // form feed
+      default:   m_t << c; m_col++;       break;
+    }
+  }
 }
 void AsciidocCodeGenerator::writeCodeLink(const char *ref,const char *file,
     const char *anchor,const char *name, const char *tooltip)
@@ -283,30 +278,6 @@ void AsciidocCodeGenerator::endCodeFragment()
   AD_VIS_C
   m_t << "----" << endl
       << endl;
-}
-
-void writeAsciidocCodeBlock(FTextStream &t,FileDef *fd)
-{
-  AD_GEN_C
-  ParserInterface *pIntf=Doxygen::parserManager->getParser(fd->getDefFileExtension());
-  SrcLangExt langExt = getLanguageFromFileName(fd->getDefFileExtension());
-  pIntf->resetCodeParserState();
-  AsciidocCodeGenerator *asciidocGen = new AsciidocCodeGenerator(t);
-  pIntf->parseCode(*asciidocGen,  // codeOutIntf
-      0,           // scopeName
-      fileToString(fd->absFilePath(),Config_getBool(FILTER_SOURCE_FILES)),
-      langExt,     // lang
-      FALSE,       // isExampleBlock
-      0,           // exampleName
-      fd,          // fileDef
-      -1,          // startLine
-      -1,          // endLine
-      FALSE,       // inlineFragement
-      0,           // memberDef
-      TRUE         // showLineNumbers
-      );
-  asciidocGen->finish();
-  delete asciidocGen;
 }
 
 
