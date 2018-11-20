@@ -54,13 +54,13 @@
 #define BLUE    "\x1b[34m"
 #define RESET   "\x1b[0m"
 #define AD_GEN_C AD_GEN_C1(t)
-#define AD_GEN_C1(x) x << BLUE "AD_GEN_C " << __LINE__ << RESET;
+#define AD_GEN_C1(x) x << BLUE "AD_GEN" << __LINE__ <<RESET;
 #define AD_GEN_C2(y) AD_GEN_C2a(t,y)
-#define AD_GEN_C2a(x,y) x << BLUE "AD_GEN_C " << __LINE__ << ":" << y << RESET;
+#define AD_GEN_C2a(x,y) x << BLUE "AD_GEN" << __LINE__ << ":" << y << RESET;
 #define AD_VIS_C AD_VIS_C1(m_t)
-#define AD_VIS_C1(x) x << BLUE "AD_GEN_C " << __LINE__ << RESET;
+#define AD_VIS_C1(x) x << BLUE "AD_GEN" << __LINE__ << RESET;
 #define AD_VIS_C2(y) AD_VIS_C2a(m_t,y)
-#define AD_VIS_C2a(x,y) x << BLUE "AD_GEN_C " << __LINE__ << " " << y << RESET;
+#define AD_VIS_C2a(x,y) x << BLUE "AD_GEN" << __LINE__ << " " << y << RESET;
 #else
 #define AD_GEN_C
 #define AD_GEN_C1(x)
@@ -398,7 +398,7 @@ AD_GEN_C2("IndexSections " << is)
     case isClassDocumentation:
     case isFileDocumentation:
     case isExampleDocumentation:
-      t << "== ";
+      t << endl << "== ";
       break;
     case isPageDocumentation:
     case isPageDocumentation2:
@@ -665,7 +665,7 @@ AD_GEN_C
 void AsciidocGenerator::startMemberHeader(const char *name,int)
 {
 AD_GEN_C
-  t << "=== ";
+  t << endl << "=== ";
   m_inSimpleSect[m_levelListItem] = TRUE;
 }
 
@@ -753,13 +753,16 @@ AD_GEN_C
 void AsciidocGenerator::startMemberItem(const char *,int,const char *)
 {
 AD_GEN_C
-  if (m_inListItem[m_levelListItem]) t << endl;
+  if (m_inListItem[m_levelListItem])
+  {
+    t << endl
+      << endl;
+  }
   m_inListItem[m_levelListItem] = TRUE;
 }
 void AsciidocGenerator::endMemberItem()
 {
 AD_GEN_C
-    t << " +" << endl;
 }
 void AsciidocGenerator::startBold(void)
 {
@@ -779,7 +782,7 @@ AD_GEN_C2("extraIndentLevel " << extraIndentLevel)
   m_inSimpleSect[m_levelListItem] = FALSE;
   if (m_inLevel != -1) m_inGroup = TRUE;
   m_inLevel = extraIndentLevel;
-  t << "=== ";
+  t << endl << "=== ";
 }
 void AsciidocGenerator::writeRuler(void)
 {
@@ -1075,6 +1078,7 @@ AD_GEN_C
 void AsciidocGenerator::startMemberDescription(const char *,const char *, bool)
 {
 AD_GEN_C
+  t << " +";
 }
 void AsciidocGenerator::endMemberDescription()
 {
@@ -1121,7 +1125,7 @@ AD_GEN_C
 void AsciidocGenerator::startMemberGroupHeader(bool hasHeader)
 {
 AD_GEN_C
-  t << "==== ";
+  t << endl << "==== ";
 }
 void AsciidocGenerator::endMemberGroupHeader()
 {
@@ -1206,7 +1210,8 @@ AD_GEN_C
 void AsciidocGenerator::startExamples()
 {
 AD_GEN_C
-  t << "=== ";
+    t << endl
+      << endl << "=== ";
   docify(theTranslator->trExamples());
 }
 
@@ -1237,7 +1242,8 @@ AD_GEN_C
 void AsciidocGenerator::startSubsection(void)
 {
 AD_GEN_C
-  t << "== ";
+  t << endl
+    << endl << "== ";
 }
 void AsciidocGenerator::endSubsection(void)
 {
@@ -1253,7 +1259,8 @@ AD_GEN_C
 void AsciidocGenerator::startSubsubsection(void)
 {
 AD_GEN_C
-  t << "=== ";
+    t << endl
+      << endl << "=== ";
 }
 void AsciidocGenerator::endSubsubsection(void)
 {
@@ -1533,7 +1540,8 @@ AD_GEN_C
 void AsciidocGenerator::startConstraintList(const char *header)
 {
 AD_GEN_C
-  t << "==== ";
+    t << endl
+      << endl << "==== ";
   docify(header);
   t << endl;
   t << endl;
