@@ -81,7 +81,7 @@ static void visitCaption(AsciidocDocVisitor *parent, QList<DocNode> children)
 
 AsciidocDocVisitor::AsciidocDocVisitor(FTextStream &t,CodeOutputInterface &ci,
 				       Definition *ctx)
-  : DocVisitor(DocVisitor_Asciidoc), m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE)
+  : DocVisitor(DocVisitor_Asciidoc), m_t(t), m_ci(ci), m_insidePre(FALSE), m_insideCode(FALSE), m_hide(FALSE)
 {
 AD_VIS_C
   if (ctx) m_langExt=ctx->getDefFileExtension();
@@ -89,8 +89,6 @@ AD_VIS_C
 AsciidocDocVisitor::~AsciidocDocVisitor()
 {
 AD_VIS_C
-  m_t << endl
-      << endl;
 }
 
 //--------------------------------------
@@ -120,6 +118,10 @@ AD_VIS_C
   if (m_insidePre)
   {
     m_t << w->chars();
+  }
+  else if (m_insideCode)
+  {
+    m_t << "{nbsp}";
   }
   else
   {
@@ -154,7 +156,8 @@ void AsciidocDocVisitor::visit(DocLineBreak *)
 {
 AD_VIS_C
   if (m_hide) return;
-  m_t << endl << " +" << endl;
+  if (m_insidePre) m_t << '\n';
+  else m_t << " +" << endl;
 }
 
 void AsciidocDocVisitor::visit(DocHorRuler *)
@@ -171,19 +174,28 @@ AD_VIS_C
   switch (s->style())
   {
     case DocStyleChange::Bold:
-      if (s->enable()) m_t << "**";      else m_t << "**";
+      if (s->enable()) m_t << "**";     else m_t << "**";
       break;
     case DocStyleChange::Italic:
       if (s->enable()) m_t << "__";     else m_t << "__";
       break;
     case DocStyleChange::Code:
-      if (s->enable()) m_t << "``"; else m_t << "``";
+      if (s->enable())
+      {
+	  m_t << "``";
+	  m_insideCode=TRUE;
+      }
+      else
+      {
+	  m_t << "``";
+	  m_insideCode=FALSE;
+      }
       break;
     case DocStyleChange::Subscript:
-      if (s->enable()) m_t << "~";    else m_t << "~";
+      if (s->enable()) m_t << "~";      else m_t << "~";
       break;
     case DocStyleChange::Superscript:
-      if (s->enable()) m_t << "^";    else m_t << "^";
+      if (s->enable()) m_t << "^";      else m_t << "^";
       break;
     case DocStyleChange::Center:
       if (s->enable()) m_t << "|===" << endl;
@@ -192,7 +204,7 @@ AD_VIS_C
     case DocStyleChange::Preformatted:
       if (s->enable())
       {
-	  m_t << "[literal]" << endl;
+	m_t << "[literal]" << endl;
         m_insidePre=TRUE;
       }
       else
@@ -1429,7 +1441,8 @@ AD_VIS_C
 void AsciidocDocVisitor::visitPost(DocText *)
 {
 AD_VIS_C
-  // m_t << endl; // Needs more?
+  m_t << endl
+      << endl;
 }
 
 

@@ -124,7 +124,7 @@ static void addIndexTerm(FTextStream &t, QCString prim, QCString sec = "")
 
 static void writeInclude(FTextStream &t, const char *const filename)
 {
-    t << "include::" << filename << ".adoc[leveloffset=+1]" << endl;
+    t << endl << "include::" << filename << ".adoc[leveloffset=+1]" << endl;
 }
 
 static void writeAsciidocLink(FTextStream &t,const char * /*extRef*/,const char *compoundId,

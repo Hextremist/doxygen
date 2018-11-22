@@ -168,6 +168,7 @@ class AsciidocDocVisitor : public DocVisitor
     FTextStream &m_t;
     CodeOutputInterface &m_ci;
     bool m_insidePre;
+    bool m_insideCode;
     bool m_hide;
     QStack<bool> m_enabled;
     QCString m_langExt;
