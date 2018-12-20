@@ -35,6 +35,7 @@
 #include "msc.h"
 #include "dia.h"
 #include "htmlentity.h"
+#include "emoji.h"
 #include "plantuml.h"
 
 #if 1
@@ -142,6 +143,13 @@ AD_VIS_C
   {
     err("Asciidoc: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(s->symbol(),TRUE));
   }
+}
+
+void AsciidocDocVisitor::visit(DocEmoji *s)
+{
+AD_VIS_C
+  if (m_hide) return;
+  err("AsciiDoc: Emoji currently not supported: %s\n",EmojiEntityMapper::instance()->html(s->emoji()));
 }
 
 void AsciidocDocVisitor::visit(DocURL *u)
