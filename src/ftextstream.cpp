@@ -146,12 +146,14 @@ FTextStream::FTextStream()
 {
   m_dev = 0;
   m_owndev = FALSE;
+  m_newlines = 0;
 }
 
 FTextStream::FTextStream( QIODevice *dev )
 {
   m_dev = dev;
   m_owndev = FALSE;
+  m_newlines = 0;
 }
 
 FTextStream::FTextStream( QGString *s )
@@ -159,6 +161,7 @@ FTextStream::FTextStream( QGString *s )
   m_dev = new QGStringBuffer(s);
   ((QGStringBuffer*)m_dev)->open( IO_WriteOnly );
   m_owndev = TRUE;
+  m_newlines = 0;
 }
 
 FTextStream::FTextStream( FILE *fh )
@@ -166,6 +169,7 @@ FTextStream::FTextStream( FILE *fh )
   m_dev = new QFile;
   ((QFile *)m_dev)->open( IO_WriteOnly, fh);
   m_owndev = TRUE;
+  m_newlines = 0;
 }
 
 FTextStream::~FTextStream()
