@@ -49,7 +49,7 @@ class AsciidocCodeGenerator : public CodeOutputInterface
     void writeCodeAnchor(const char *);
     void writeLineNumber(const char *extRef,const char *compId,
         const char *anchorId,int l);
-    void setCurrentDoc(Definition *,const char *,bool);
+    void setCurrentDoc(const Definition *,const char *,bool);
     void addWord(const char *,bool);
     void finish();
     void startCodeFragment(SrcLangExt lang);
@@ -137,7 +137,7 @@ class AsciidocGenerator : public OutputGenerator
     { m_codeGen.writeCodeAnchor(anchor); }
     // ---------------------------
 
-    void writeDoc(DocNode *,Definition *ctx,MemberDef *md);
+    void writeDoc(DocNode *,const Definition *ctx,const MemberDef *md);
 
     ///////////////////////////////////////////////////////////////
     // structural output interface
@@ -282,16 +282,16 @@ class AsciidocGenerator : public OutputGenerator
     void startClassDiagram();
     void endClassDiagram(const ClassDiagram &,const char *,const char *);
     void startDotGraph();
-    void endDotGraph(const DotClassGraph &g);
+    void endDotGraph(DotClassGraph &g);
     void startInclDepGraph();
-    void endInclDepGraph(const DotInclDepGraph &g);
+    void endInclDepGraph(DotInclDepGraph &g);
     void startGroupCollaboration();
-    void endGroupCollaboration(const DotGroupCollaboration &g);
+    void endGroupCollaboration(DotGroupCollaboration &g);
     void startCallGraph();
-    void endCallGraph(const DotCallGraph &g);
+    void endCallGraph(DotCallGraph &g);
     void startDirDepGraph();
-    void endDirDepGraph(const DotDirDeps &g);
-    void writeGraphicalHierarchy(const DotGfxHierarchyTable &g);
+    void endDirDepGraph(DotDirDeps &g);
+    void writeGraphicalHierarchy(DotGfxHierarchyTable &g);
     void startQuickIndices();
     void endQuickIndices();
     void writeSplitBar(const char *);
@@ -340,7 +340,7 @@ class AsciidocGenerator : public OutputGenerator
     void writeLabel(const char *,bool);
     void endLabels();
 
-    void setCurrentDoc(Definition *,const char *,bool);
+    void setCurrentDoc(const Definition *,const char *,bool);
     void addWord(const char *,bool);
 
 private:

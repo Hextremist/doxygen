@@ -213,7 +213,7 @@ class HtmlGenerator : public OutputGenerator
     void writeRuler()    { t << "<hr/>"; }
     void writeAnchor(const char *,const char *name) 
                          { t << "<a name=\"" << name <<"\" id=\"" << name << "\"></a>"; }
-    void startCodeFragment();
+    void startCodeFragment(SrcLangExt lang);
     void endCodeFragment();
     void startEmphasis() { t << "<em>";  }
     void endEmphasis()   { t << "</em>"; }

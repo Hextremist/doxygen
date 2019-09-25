@@ -148,8 +148,15 @@ AD_VIS_C
 void AsciidocDocVisitor::visit(DocEmoji *s)
 {
 AD_VIS_C
-  if (m_hide) return;
-  err("AsciiDoc: Emoji currently not supported: %s\n",EmojiEntityMapper::instance()->html(s->emoji()));
+   const char *res = EmojiEntityMapper::instance()->unicode(s->index());
+  if (res)
+  {
+    m_t << res;
+  }
+  else
+  {
+    m_t << s->name();
+  }
 }
 
 void AsciidocDocVisitor::visit(DocURL *u)
@@ -1423,22 +1430,6 @@ AD_VIS_C
   endLink();
   m_t << " ";
 }
-
-void AsciidocDocVisitor::visitPre(DocCopy *)
-{
-AD_VIS_C
-  if (m_hide) return;
-  // TODO: to be implemented
-}
-
-
-void AsciidocDocVisitor::visitPost(DocCopy *)
-{
-AD_VIS_C
-  if (m_hide) return;
-  // TODO: to be implemented
-}
-
 
 void AsciidocDocVisitor::visitPre(DocText *)
 {

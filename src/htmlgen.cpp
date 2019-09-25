@@ -2654,7 +2654,7 @@ void HtmlGenerator::endConstraintList()
   t << "</div>" << endl;
 }
 
-void HtmlGenerator::startCodeFragment()
+void HtmlGenerator::startCodeFragment(SrcLangExt lang)
 {
   t << PREFRAG_START;
 }

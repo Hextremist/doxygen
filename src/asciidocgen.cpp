@@ -252,7 +252,7 @@ void AsciidocCodeGenerator::writeLineNumber(const char *ref,const char *fileName
   AD_VIS_C
   m_insideCodeLine = TRUE;
 }
-void AsciidocCodeGenerator::setCurrentDoc(Definition *,const char *,bool)
+void AsciidocCodeGenerator::setCurrentDoc(const Definition *,const char *,bool)
 {
   AD_VIS_C
 }
@@ -1423,7 +1423,7 @@ void AsciidocGenerator::startGroupCollaboration()
 {
 AD_GEN_C
 }
-void AsciidocGenerator::endGroupCollaboration(const DotGroupCollaboration &g)
+void AsciidocGenerator::endGroupCollaboration(DotGroupCollaboration &g)
 {
 AD_GEN_C
   t << endl;
@@ -1434,7 +1434,7 @@ void AsciidocGenerator::startDotGraph()
 {
 AD_GEN_C
 }
-void AsciidocGenerator::endDotGraph(const DotClassGraph &g)
+void AsciidocGenerator::endDotGraph(DotClassGraph &g)
 {
 AD_GEN_C
   t << endl;
@@ -1445,7 +1445,7 @@ void AsciidocGenerator::startInclDepGraph()
 {
 AD_GEN_C
 }
-void AsciidocGenerator::endInclDepGraph(const DotInclDepGraph &g)
+void AsciidocGenerator::endInclDepGraph(DotInclDepGraph &g)
 {
 AD_GEN_C
   t << endl;
@@ -1457,7 +1457,7 @@ void AsciidocGenerator::startCallGraph()
 AD_GEN_C
   t << endl;
 }
-void AsciidocGenerator::endCallGraph(const DotCallGraph &g)
+void AsciidocGenerator::endCallGraph(DotCallGraph &g)
 {
 AD_GEN_C
   t << endl;
@@ -1468,14 +1468,14 @@ void AsciidocGenerator::startDirDepGraph()
 {
 AD_GEN_C
 }
-void AsciidocGenerator::endDirDepGraph(const DotDirDeps &g)
+void AsciidocGenerator::endDirDepGraph(DotDirDeps &g)
 {
 AD_GEN_C
   t << endl;
   g.writeGraph(t,GOF_BITMAP,EOF_Asciidoc,Config_getString(ASCIIDOC_OUTPUT), fileName,relPath,FALSE);
   t << endl;
 }
-void AsciidocGenerator::writeGraphicalHierarchy(const DotGfxHierarchyTable &)
+void AsciidocGenerator::writeGraphicalHierarchy(DotGfxHierarchyTable &)
 {
 AD_GEN_C
 }
